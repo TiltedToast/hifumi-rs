@@ -1,4 +1,8 @@
-use std::env;
+mod config;
+mod utils;
+
+use config::Config;
+use std::{env, process};
 
 use chrono::format::strftime::StrftimeItems;
 use chrono::{DateTime, Utc};
@@ -9,6 +13,7 @@ use serenity::{async_trait, Client};
 
 struct Handler {
     start_time: DateTime<Utc>,
+    config: Config,
 }
 
 #[async_trait]
@@ -38,7 +43,10 @@ impl EventHandler for Handler {
 async fn main() {
     dotenv().ok();
 
-    let token = env::var("BOT_TOKEN").expect("Expected a token in the environment");
+    let token = env::var("BOT_TOKEN").unwrap_or_else(|_| {
+        println!("Expected a bot token under BOT_TOKEN in the environment");
+        process::exit(1);
+    });
     let intents = GatewayIntents::non_privileged()
         | GatewayIntents::GUILDS
         | GatewayIntents::GUILD_MEMBERS
@@ -51,6 +59,7 @@ async fn main() {
     let mut client = Client::builder(token, intents)
         .event_handler(Handler {
             start_time: Utc::now(),
+            config: Config::new(),
         })
         .await
         .expect("Error creating client");
