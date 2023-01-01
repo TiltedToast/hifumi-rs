@@ -5,15 +5,15 @@ use std::{env, process};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
-    bot_token: String,
-    exchange_api_key: String,
-    imgur_client_id: String,
-    imgur_client_secret: String,
-    reddit_client_id: String,
-    reddit_client_secret: String,
-    reddit_refresh_token: String,
-    mongo_uri: String,
-    dev_mode: bool,
+    pub bot_token: String,
+    pub exchange_api_key: String,
+    pub imgur_client_id: String,
+    pub imgur_client_secret: String,
+    pub reddit_client_id: String,
+    pub reddit_client_secret: String,
+    pub reddit_refresh_token: String,
+    pub mongo_uri: String,
+    pub dev_mode: bool,
 }
 
 impl Config {

@@ -96,6 +96,7 @@ checksum = "99d76085681585d39016f4d3841eb019201fc54d2dd0d92ad1e4fab3bfb32754"
 dependencies = [
  "ahash",
  "base64",
+ "chrono",
  "hex",
  "indexmap",
  "lazy_static",
@@ -378,6 +379,7 @@ checksum = "38390104763dc37a5145a53c29c63c1290b5d316d6086ec32c293f6736051bb0"
 dependencies = [
  "futures-channel",
  "futures-core",
+ "futures-executor",
  "futures-io",
  "futures-sink",
  "futures-task",
@@ -530,8 +532,10 @@ name = "hifumi-rust"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bson",
  "chrono",
  "dotenv",
+ "futures",
  "mongodb",
  "serde",
  "serde_json",
