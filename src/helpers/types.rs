@@ -3,11 +3,20 @@ use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
 use mongodb::Client as MongoClient;
 use serde::{Deserialize, Serialize};
+use serenity::{model::prelude::Message, prelude::Context};
 use std::collections::HashMap;
 use tokio::sync::Mutex;
 
 pub type StatusVec = Mutex<Vec<StatusDoc>>;
 pub type PrefixMap = Mutex<HashMap<String, String>>;
+
+pub struct MessageCommandData {
+    pub ctx: Context,
+    pub msg: Message,
+    pub command: String,
+    pub react_cmd: String,
+    pub sub_cmd: String,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StatusDoc {

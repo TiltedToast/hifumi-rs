@@ -23,7 +23,7 @@ use tokio::sync::Mutex;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn message(self: &Handler, ctx: Context, msg: Message) {
+    async fn message(&self, ctx: Context, msg: Message) {
         match handle_message(self, ctx, msg).await {
             Ok(_) => (),
             Err(e) => println!("Error: {e}"),
@@ -48,7 +48,6 @@ impl EventHandler for Handler {
         let status_loop = start_status_loop(&self.statuses, ctx);
 
         if is_indev() {
-            println!("Running in development mode");
             status_loop.await;
         } else {
             println!("Running in production mode");

@@ -4,7 +4,7 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 
 use crate::helpers::{
-    types::{Handler, PrefixDoc},
+    types::{Handler, MessageCommandData, PrefixDoc},
     utils::is_indev,
 };
 
@@ -13,6 +13,17 @@ pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> An
         return Ok(());
     }
     let content = msg.content.split_whitespace().collect::<Vec<&str>>();
+
+    if content.is_empty() {
+        return Ok(());
+    }
+
+    let react_cmd = content[0][1..].to_string();
+    let mut sub_cmd = String::new();
+
+    if content.len() > 1 {
+        sub_cmd = content[1].to_string();
+    }
 
     let prefix_coll = handler
         .db_client
@@ -69,9 +80,22 @@ pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> An
     {
         let command = content[0].to_lowercase().replace(&prefix, "");
 
-        if command == "ping" {
-            msg.channel_id.say(&ctx.http, "Pong!").await?;
-        }
+        handle_command(MessageCommandData {
+            ctx,
+            msg,
+            command,
+            react_cmd,
+            sub_cmd,
+        })
+        .await?;
+    }
+
+    Ok(())
+}
+
+async fn handle_command(data: MessageCommandData) -> AnyResult<()> {
+    if data.command == "ping" {
+        data.msg.channel_id.say(&data.ctx.http, "Pong!").await?;
     }
 
     Ok(())

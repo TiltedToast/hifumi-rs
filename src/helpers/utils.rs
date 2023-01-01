@@ -10,16 +10,15 @@ use serenity::prelude::*;
 use super::types::StatusVec;
 
 pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
-    if statuses.lock().await.len() == 0 {
-        println!("No statuses found in database");
-        return;
-    }
     loop {
         let random_status = random_element_vec(&statuses.lock().await);
 
         if let Some(status) = random_status {
             let activity = get_activity((&status.r#type, &status.status));
             ctx.set_activity(activity).await;
+        } else {
+            println!("No statuses found in database");
+            return;
         }
         sleep(Duration::from_secs(random_int_from_range(300, 900))).await;
     }
@@ -50,9 +49,10 @@ pub fn inside_docker() -> bool {
 }
 
 /// Checks if the current environment is in development mode.
+///
+/// Checks for `DEV_MODE` environment variable to be set to `true`
 pub fn is_indev() -> bool {
-    let indev_env = env::var("DEV_MODE").unwrap_or_default();
-    indev_env == "true"
+    env::var("DEV_MODE").unwrap_or_default() == "true"
 }
 
 /// Returns a random item from a slice, Some(item) if the slice is not empty, None otherwise.
