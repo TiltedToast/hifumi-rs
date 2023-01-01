@@ -31,7 +31,7 @@ impl Config {
             reddit_client_id: env::var("REDDIT_CLIENT_ID").unwrap_or_default(),
             reddit_client_secret: env::var("REDDIT_CLIENT_SECRET").unwrap_or_default(),
             reddit_refresh_token: env::var("REDDIT_REFRESH_TOKEN").unwrap_or_default(),
-            dev_mode: env::var("DEV_MODE").unwrap_or_else(|_| "false".to_string()) == "true",
+            dev_mode: env::var("DEV_MODE").unwrap_or_default() == "true",
         };
 
         let missing_credentials = &config.check_config();

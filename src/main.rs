@@ -2,15 +2,16 @@ mod config;
 mod handlers;
 mod helpers;
 
+use crate::config::Config;
+use crate::handlers::messages::handle_message;
+use crate::helpers::types::{Handler, PrefixDoc, StatusDoc};
+use crate::helpers::utils::{is_indev, start_status_loop};
+
 use anyhow::Result as AnyResult;
 use chrono::format::strftime::StrftimeItems;
 use chrono::Utc;
-use config::Config;
 use dotenv::dotenv;
 use futures::stream::TryStreamExt;
-use crate::handlers::messages::handle_message;
-use crate::helpers::types::{Handler, PrefixDoc, StatusDoc};
-use crate::helpers::utils::{get_activity, random_element_vec};
 use mongodb::options::ClientOptions;
 use mongodb::Client as MongoClient;
 use serenity::model::prelude::*;
@@ -44,11 +45,14 @@ impl EventHandler for Handler {
         println!("{}", ready.user.id);
         println!("------------------");
 
-        let random_status = random_element_vec(&self.statuses.lock().await);
+        let status_loop = start_status_loop(&self.statuses, ctx);
 
-        if let Some(status) = random_status {
-            let activity = get_activity((&status.r#type, &status.status));
-            ctx.set_activity(activity).await;
+        if is_indev() {
+            println!("Running in development mode");
+            status_loop.await;
+        } else {
+            println!("Running in production mode");
+            status_loop.await;
         }
     }
 }

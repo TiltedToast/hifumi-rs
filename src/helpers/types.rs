@@ -1,11 +1,13 @@
-use serde::{Deserialize, Serialize};
+use crate::config::Config;
 use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
-use crate::config::Config;
 use mongodb::Client as MongoClient;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tokio::sync::Mutex;
 
+pub type StatusVec = Mutex<Vec<StatusDoc>>;
+pub type PrefixMap = Mutex<HashMap<String, String>>;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StatusDoc {
@@ -22,11 +24,10 @@ pub struct PrefixDoc {
     pub prefix: String,
 }
 
-#[allow(dead_code)]
 pub struct Handler {
     pub start_time: DateTime<Utc>,
     pub config: Config,
     pub db_client: MongoClient,
-    pub statuses: Mutex<Vec<StatusDoc>>,
-    pub prefixes: Mutex<HashMap<String, String>>,
+    pub statuses: StatusVec,
+    pub prefixes: PrefixMap,
 }

@@ -1,9 +1,12 @@
-use bson::oid::ObjectId;
-use serenity::prelude::*;
-use serenity::model::prelude::*;
 use anyhow::Result as AnyResult;
+use bson::oid::ObjectId;
+use serenity::model::prelude::*;
+use serenity::prelude::*;
 
-use crate::helpers::{utils::is_indev, types::{PrefixDoc, Handler}};
+use crate::helpers::{
+    types::{Handler, PrefixDoc},
+    utils::is_indev,
+};
 
 pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> AnyResult<()> {
     if msg.author.bot {
