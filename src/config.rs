@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::utils::inside_docker;
+use crate::helpers::utils;
 use std::{env, process};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -20,7 +20,7 @@ impl Config {
     pub fn new() -> Self {
         let config = Config {
             bot_token: env::var("BOT_TOKEN").unwrap_or_default(),
-            mongo_uri: if inside_docker() {
+            mongo_uri: if utils::inside_docker() {
                 "mongodb://db:27017/".to_string()
             } else {
                 env::var("MONGO_URI").unwrap_or_else(|_| "mongodb://127.0.0.1:27017/".to_string())

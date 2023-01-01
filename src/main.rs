@@ -1,46 +1,24 @@
 mod config;
-mod utils;
+mod handlers;
+mod helpers;
 
 use anyhow::Result as AnyResult;
-use bson::oid::ObjectId;
 use chrono::format::strftime::StrftimeItems;
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use config::Config;
 use dotenv::dotenv;
 use futures::stream::TryStreamExt;
+use handlers::messages::handle_message;
+use helpers::types::{Handler, PrefixDoc, StatusDoc};
+use helpers::utils::{get_activity, random_element_vec};
 use mongodb::options::ClientOptions;
 use mongodb::Client as MongoClient;
-use serde::{Deserialize, Serialize};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::{async_trait, Client as DiscordClient};
 use std::collections::HashMap;
 use std::{env, process};
 use tokio::sync::Mutex;
-
-#[allow(dead_code)]
-struct Handler {
-    pub start_time: DateTime<Utc>,
-    pub config: Config,
-    pub db_client: MongoClient,
-    pub statuses: Mutex<Vec<StatusDoc>>,
-    pub prefixes: Mutex<HashMap<String, String>>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct StatusDoc {
-    _id: ObjectId,
-    r#type: String,
-    status: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[allow(non_snake_case)]
-struct PrefixDoc {
-    _id: ObjectId,
-    serverId: String,
-    prefix: String,
-}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -66,10 +44,10 @@ impl EventHandler for Handler {
         println!("{}", ready.user.id);
         println!("------------------");
 
-        let random_status = utils::random_element_vec(&self.statuses.lock().await);
+        let random_status = random_element_vec(&self.statuses.lock().await);
 
         if let Some(status) = random_status {
-            let activity = utils::get_activity((&status.r#type, &status.status));
+            let activity = get_activity((&status.r#type, &status.status));
             ctx.set_activity(activity).await;
         }
     }
@@ -145,74 +123,5 @@ async fn main() -> AnyResult<()> {
     if let Err(why) = client.start().await {
         println!("Client error: {why}");
     }
-    Ok(())
-}
-
-async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> AnyResult<()> {
-    if msg.author.bot {
-        return Ok(());
-    }
-    let content = msg.content.split_whitespace().collect::<Vec<&str>>();
-
-    let prefix_coll = handler
-        .db_client
-        .database("hifumi")
-        .collection::<PrefixDoc>("prefixes");
-
-    if msg.guild(&ctx).is_some()
-        && !handler
-            .prefixes
-            .lock()
-            .await
-            .contains_key(&msg.guild_id.unwrap_or_default().to_string())
-    {
-        let prefix_doc = PrefixDoc {
-            _id: ObjectId::new(),
-            serverId: match msg.guild_id {
-                Some(id) => id.as_u64().to_string(),
-                None => return Ok(()),
-            },
-            prefix: "h!".to_string(),
-        };
-
-        prefix_coll.insert_one(&prefix_doc, None).await?;
-        handler
-            .prefixes
-            .lock()
-            .await
-            .insert(prefix_doc.serverId.to_string(), prefix_doc.prefix);
-
-        msg.channel_id
-            .say(
-                &ctx.http,
-                "I have set the prefix to `h!`. You can change it with `h!prefix`",
-            )
-            .await?;
-    }
-
-    let mut prefix = match msg.guild_id {
-        Some(id) => match handler.prefixes.lock().await.get(&id.to_string()) {
-            Some(prefix) => prefix.to_string(),
-            None => "h!".to_string(),
-        },
-        None => "h!".to_string(),
-    };
-
-    if utils::is_indev() {
-        prefix = "h?".to_string();
-    }
-
-    if msg
-        .content
-        .to_lowercase()
-        .starts_with(&prefix.to_lowercase())
-    {
-        let command = content[0].to_lowercase().replace(&prefix, "");
-
-        if command == "ping" {
-            msg.channel_id.say(&ctx.http, "Pong!").await?;
-        }
-    }
-
     Ok(())
 }
