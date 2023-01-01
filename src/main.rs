@@ -66,7 +66,7 @@ impl EventHandler for Handler {
         println!("{}", ready.user.id);
         println!("------------------");
 
-        let random_status = utils::random_element_vec(&self.statuses.lock().await.to_vec());
+        let random_status = utils::random_element_vec(&self.statuses.lock().await);
 
         if let Some(status) = random_status {
             let activity = utils::get_activity((&status.r#type, &status.status));
