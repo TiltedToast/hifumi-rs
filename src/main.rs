@@ -97,7 +97,6 @@ async fn main() -> AnyResult<()> {
         .try_collect::<Vec<StatusDoc>>()
         .await?;
 
-    #[allow(unused_mut)]
     let mut prefixes: HashMap<String, String> = HashMap::new();
 
     let prefix_array = mongo_client

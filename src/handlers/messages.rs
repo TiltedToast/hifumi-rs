@@ -12,13 +12,20 @@ pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> An
     if msg.author.bot {
         return Ok(());
     }
-    let content = msg.content.split_whitespace().collect::<Vec<&str>>();
+    let content = msg
+        .content
+        .split_whitespace()
+        .map(str::to_lowercase)
+        .collect::<Vec<String>>();
+
+    println!("{content:?}");
 
     if content.is_empty() {
         return Ok(());
     }
 
-    let react_cmd = content[0][1..].to_string();
+    let react_cmd = content[0].strip_prefix('$').unwrap_or_default().to_string();
+
     let mut sub_cmd = String::new();
 
     if content.len() > 1 {
@@ -73,12 +80,10 @@ pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> An
         prefix = "h?".to_string();
     }
 
-    if msg
-        .content
-        .to_lowercase()
-        .starts_with(&prefix.to_lowercase())
-    {
-        let command = content[0].to_lowercase().replace(&prefix, "");
+    prefix = prefix.to_lowercase();
+
+    if msg.content.starts_with(&prefix) {
+        let command = content[0].replace(&prefix, "");
 
         handle_command(MessageCommandData {
             ctx,
