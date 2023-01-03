@@ -1,13 +1,55 @@
+use anyhow::anyhow;
+use anyhow::Result as AnyResult;
+use bson::oid::ObjectId;
+use mongodb::Collection;
+use serenity::model::prelude::Message;
 use std::env;
 use tokio::time::sleep;
 use tokio::time::Duration;
+
+use super::types::Handler;
+use super::types::PrefixDoc;
+use super::types::StatusVec;
 
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use serenity::model::gateway::Activity;
 use serenity::prelude::*;
 
-use super::types::StatusVec;
+/// Registers the prefix for the guild in the database and in the prefixes map
+///
+/// # Arguments
+///
+/// * `msg` - The message that triggered the command
+/// * `prefix_coll` - The `MongoDB` collection for the prefixes
+/// * `handler` - The Event Handler that dispatches the events
+///
+/// # Returns
+///
+/// * `()` - If the prefix was successfully registered
+/// * `Err` - If the prefix was not registered
+pub async fn register_prefix(
+    msg: &Message,
+    prefix_coll: Collection<PrefixDoc>,
+    handler: &Handler,
+) -> AnyResult<()> {
+    let prefix_doc = PrefixDoc {
+        _id: ObjectId::new(),
+        serverId: match msg.guild_id {
+            Some(id) => id.to_string(),
+            None => return Err(anyhow!("No guild id found")),
+        },
+        prefix: "h!".to_string(),
+    };
+    prefix_coll.insert_one(&prefix_doc, None).await?;
+    handler
+        .prefixes
+        .lock()
+        .await
+        .insert(prefix_doc.serverId, prefix_doc.prefix);
+
+    Ok(())
+}
 
 pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
     loop {

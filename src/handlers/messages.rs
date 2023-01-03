@@ -1,11 +1,10 @@
 use anyhow::Result as AnyResult;
-use bson::oid::ObjectId;
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
 use crate::helpers::{
     types::{Handler, MessageCommandData, PrefixDoc},
-    utils::is_indev,
+    utils::{is_indev, register_prefix},
 };
 
 pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> AnyResult<()> {
@@ -17,8 +16,6 @@ pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> An
         .split_whitespace()
         .map(str::to_lowercase)
         .collect::<Vec<String>>();
-
-    println!("{content:?}");
 
     if content.is_empty() {
         return Ok(());
@@ -37,35 +34,22 @@ pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> An
         .database("hifumi")
         .collection::<PrefixDoc>("prefixes");
 
-    if msg.guild(&ctx).is_some()
-        && !handler
+    if let Some(guild_id) = msg.guild_id {
+        if !handler
             .prefixes
             .lock()
             .await
-            .contains_key(&msg.guild_id.unwrap_or_default().to_string())
-    {
-        let prefix_doc = PrefixDoc {
-            _id: ObjectId::new(),
-            serverId: match msg.guild_id {
-                Some(id) => id.as_u64().to_string(),
-                None => return Ok(()),
-            },
-            prefix: "h!".to_string(),
-        };
-
-        prefix_coll.insert_one(&prefix_doc, None).await?;
-        handler
-            .prefixes
-            .lock()
-            .await
-            .insert(prefix_doc.serverId.to_string(), prefix_doc.prefix);
-
-        msg.channel_id
-            .say(
-                &ctx.http,
-                "I have set the prefix to `h!`. You can change it with `h!prefix`",
-            )
-            .await?;
+            .contains_key(&guild_id.to_string())
+        {
+            if let Ok(()) = register_prefix(&msg, prefix_coll, handler).await {
+                msg.channel_id
+                    .say(
+                        &ctx.http,
+                        "I have set the prefix to `h!`. You can change it with `h!prefix`",
+                    )
+                    .await?;
+            }
+        }
     }
 
     let mut prefix = match msg.guild_id {
