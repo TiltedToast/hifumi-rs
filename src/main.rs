@@ -7,7 +7,7 @@ use crate::handlers::messages::handle_message;
 use crate::helpers::types::{Handler, PrefixDoc, StatusDoc};
 use crate::helpers::utils::{is_indev, start_status_loop};
 
-use anyhow::Result as AnyResult;
+use anyhow::Result;
 use chrono::format::strftime::StrftimeItems;
 use chrono::Utc;
 use dotenv::dotenv;
@@ -24,10 +24,12 @@ use tokio::sync::Mutex;
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
-        match handle_message(self, ctx, msg).await {
+        match handle_message(self, &ctx, &msg).await {
             Ok(_) => (),
-            Err(e) => println!("Error: {e}"),
-        };
+            Err(e) => {
+                msg.channel_id.say(&ctx.http, e).await.unwrap();
+            }
+        }
     }
 
     async fn ready(&self, ctx: Context, ready: Ready) {
@@ -57,7 +59,7 @@ impl EventHandler for Handler {
 }
 
 #[tokio::main]
-async fn main() -> AnyResult<()> {
+async fn main() -> Result<()> {
     let start_time = Utc::now();
     dotenv().ok();
 

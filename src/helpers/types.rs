@@ -10,12 +10,15 @@ use tokio::sync::Mutex;
 pub type StatusVec = Mutex<Vec<StatusDoc>>;
 pub type PrefixMap = Mutex<HashMap<String, String>>;
 
-pub struct MessageCommandData {
-    pub ctx: Context,
-    pub msg: Message,
+pub struct MessageCommandData<'a> {
+    pub ctx: &'a Context,
+    pub msg: &'a Message,
+    pub content: Vec<String>,
     pub command: String,
     pub react_cmd: String,
     pub sub_cmd: String,
+    pub handler: &'a Handler,
+    pub prefix: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -33,6 +36,8 @@ pub struct PrefixDoc {
     pub prefix: String,
 }
 
+/// Handler contains the data necessary to run the bot. This includes the start time,
+/// the configuration, the database client, the statuses, and the prefixes.
 pub struct Handler {
     pub start_time: DateTime<Utc>,
     pub config: Config,

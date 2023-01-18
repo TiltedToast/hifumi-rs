@@ -1,13 +1,15 @@
 use anyhow::anyhow;
-use anyhow::Result as AnyResult;
+use anyhow::Result;
 use bson::oid::ObjectId;
 use mongodb::Collection;
 use serenity::model::prelude::Message;
+use serenity::model::user::User;
 use std::env;
 use tokio::time::sleep;
 use tokio::time::Duration;
 
 use super::types::Handler;
+use super::types::MessageCommandData;
 use super::types::PrefixDoc;
 use super::types::StatusVec;
 
@@ -15,6 +17,36 @@ use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use serenity::model::gateway::Activity;
 use serenity::prelude::*;
+
+
+/// Parses a user from the message content at the given index.
+/// If no user is found, the author of the message is returned.
+/// If the user is not found, an error is returned.
+///
+/// # Arguments
+/// * `data` - The message command data.
+/// * `idx` - The index of the user in the message content.
+///
+/// # Errors
+/// * If the user is not found.
+/// * If the user ID is not a valid u64.
+///
+/// # Returns
+/// The target user.
+pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) -> Result<User> {
+    let user = if data.content.get(idx).is_some() {
+        let user_id = data.content[idx].replace("<@", "").replace(">", "");
+        let user_id = user_id.parse::<u64>().map_err(|_| anyhow!("Invalid user ID"))?;
+        data.ctx
+            .http
+            .get_user(user_id)
+            .await
+            .map_err(|_| anyhow!("User not found"))?
+    } else {
+        data.msg.author.clone()
+    };
+    Ok(user)
+}
 
 /// Registers the prefix for the guild in the database and in the prefixes map
 ///
@@ -32,7 +64,7 @@ pub async fn register_prefix(
     msg: &Message,
     prefix_coll: Collection<PrefixDoc>,
     handler: &Handler,
-) -> AnyResult<()> {
+) -> Result<()> {
     let prefix_doc = PrefixDoc {
         _id: ObjectId::new(),
         serverId: match msg.guild_id {
@@ -51,6 +83,8 @@ pub async fn register_prefix(
     Ok(())
 }
 
+/// A function that takes a vector of statuses and a context
+/// and sets the bot's status to a random status from the vector every 5-15 minutes.
 pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
     loop {
         let random_status = random_element_vec(&statuses.lock().await);
@@ -121,6 +155,21 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
 /// - `PLAYING` -> `Activity::playing`
 /// - `STREAMING` -> `Activity::streaming`
 /// - `COMPETING` -> `Activity::competing`
+///
+/// Returns a Discord activity based on the status type and name.
+///
+/// # Arguments
+///
+/// * `status` - A tuple containing the status type and name.
+///
+/// # Examples
+///
+/// ```
+/// let status = ("WATCHING", "Star Wars");
+/// let activity = get_activity(status);
+///
+/// assert_eq!(activity, Activity::watching("Star Wars"));
+/// ```
 pub fn get_activity(status: (&str, &str)) -> Activity {
     match status.0 {
         "LISTENING" => Activity::listening(status.1),

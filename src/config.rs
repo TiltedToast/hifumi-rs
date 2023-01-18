@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
+use serenity::utils::{Color, Colour};
 
-use crate::helpers::utils;
+use crate::helpers::utils::inside_docker;
 use std::{env, process};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Config {
     pub bot_token: String,
     pub exchange_api_key: String,
@@ -14,13 +14,17 @@ pub struct Config {
     pub reddit_refresh_token: String,
     pub mongo_uri: String,
     pub dev_mode: bool,
+    pub embed_colour: Color,
+    pub dev_channels: Vec<u64>,
+    pub bot_owners: Vec<u64>,
+    pub log_channel: u64,
 }
 
 impl Config {
     pub fn new() -> Self {
         let config = Config {
             bot_token: env::var("BOT_TOKEN").unwrap_or_default(),
-            mongo_uri: if utils::inside_docker() {
+            mongo_uri: if inside_docker() {
                 "mongodb://db:27017/".to_string()
             } else {
                 env::var("MONGO_URI").unwrap_or_else(|_| "mongodb://127.0.0.1:27017/".to_string())
@@ -32,6 +36,10 @@ impl Config {
             reddit_client_secret: env::var("REDDIT_CLIENT_SECRET").unwrap_or_default(),
             reddit_refresh_token: env::var("REDDIT_REFRESH_TOKEN").unwrap_or_default(),
             dev_mode: env::var("DEV_MODE").unwrap_or_default() == "true",
+            embed_colour: Colour::from(0xce_3a_9b),
+            dev_channels: vec![655484859405303809, 551588329003548683, 922679249058553857],
+            bot_owners: vec![258993932262834188, 207505077013839883],
+            log_channel: 655484804405657642,
         };
 
         let missing_credentials = &config.check_config();

@@ -1,13 +1,14 @@
-use anyhow::Result as AnyResult;
-use serenity::model::prelude::*;
+use anyhow::Result;
 use serenity::prelude::*;
+use serenity::{builder::CreateEmbed, model::prelude::*};
 
+use crate::helpers::utils::parse_target_user;
 use crate::helpers::{
     types::{Handler, MessageCommandData, PrefixDoc},
     utils::{is_indev, register_prefix},
 };
 
-pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> AnyResult<()> {
+pub async fn handle_message(handler: &Handler, ctx: &Context, msg: &Message) -> Result<()> {
     if msg.author.bot {
         return Ok(());
     }
@@ -72,9 +73,12 @@ pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> An
         handle_command(MessageCommandData {
             ctx,
             msg,
+            content,
             command,
             react_cmd,
             sub_cmd,
+            handler,
+            prefix,
         })
         .await?;
     }
@@ -82,10 +86,29 @@ pub async fn handle_message(handler: &Handler, ctx: Context, msg: Message) -> An
     Ok(())
 }
 
-async fn handle_command(data: MessageCommandData) -> AnyResult<()> {
+async fn handle_command(data: MessageCommandData<'_>) -> Result<()> {
     if data.command == "ping" {
-        data.msg.channel_id.say(&data.ctx.http, "Pong!").await?;
+        data.msg.channel_id.say(&data.ctx, "Pong!").await?;
+    } else if data.command == "pfp" {
+        user_avatar(data).await?;
     }
+
+    Ok(())
+}
+
+async fn user_avatar(data: MessageCommandData<'_>) -> Result<()> {
+    let user = parse_target_user(&data, 1).await?;
+
+    let embed = CreateEmbed::default()
+        .title(format!("{}'s avatar", user.name))
+        .image(user.face())
+        .color(data.handler.config.embed_colour)
+        .to_owned();
+
+    data.msg
+        .channel_id
+        .send_message(&data.ctx, |m| m.set_embed(embed))
+        .await?;
 
     Ok(())
 }
