@@ -76,7 +76,7 @@ pub async fn register_prefix(
     prefix_coll.insert_one(&prefix_doc, None).await?;
     handler
         .prefixes
-        .lock()
+        .write()
         .await
         .insert(prefix_doc.serverId, prefix_doc.prefix);
 
@@ -87,7 +87,7 @@ pub async fn register_prefix(
 /// and sets the bot's status to a random status from the vector every 5-15 minutes.
 pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
     loop {
-        let random_status = random_element_vec(&statuses.lock().await);
+        let random_status = random_element_vec(&statuses.read().await);
 
         if let Some(status) = random_status {
             let activity = get_activity((&status.r#type, &status.status));

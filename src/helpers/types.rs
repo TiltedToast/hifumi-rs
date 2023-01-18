@@ -5,10 +5,10 @@ use mongodb::Client as MongoClient;
 use serde::{Deserialize, Serialize};
 use serenity::{model::prelude::Message, prelude::Context};
 use std::collections::HashMap;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
-pub type StatusVec = Mutex<Vec<StatusDoc>>;
-pub type PrefixMap = Mutex<HashMap<String, String>>;
+pub type StatusVec = RwLock<Vec<StatusDoc>>;
+pub type PrefixMap = RwLock<HashMap<String, String>>;
 
 pub struct MessageCommandData<'a> {
     pub ctx: &'a Context,

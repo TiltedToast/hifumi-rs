@@ -38,7 +38,7 @@ pub async fn handle_message(handler: &Handler, ctx: &Context, msg: &Message) -> 
     if let Some(guild_id) = msg.guild_id {
         if !handler
             .prefixes
-            .lock()
+            .read()
             .await
             .contains_key(&guild_id.to_string())
         {
@@ -54,7 +54,7 @@ pub async fn handle_message(handler: &Handler, ctx: &Context, msg: &Message) -> 
     }
 
     let mut prefix = match msg.guild_id {
-        Some(id) => match handler.prefixes.lock().await.get(&id.to_string()) {
+        Some(id) => match handler.prefixes.read().await.get(&id.to_string()) {
             Some(prefix) => prefix.to_string(),
             None => "h!".to_string(),
         },

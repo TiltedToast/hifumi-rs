@@ -19,7 +19,7 @@ use serenity::prelude::*;
 use serenity::{async_trait, Client as DiscordClient};
 use std::collections::HashMap;
 use std::{env, process};
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -118,8 +118,8 @@ async fn main() -> Result<()> {
             start_time,
             config,
             db_client: mongo_client,
-            statuses: Mutex::new(status_array),
-            prefixes: Mutex::new(prefixes),
+            statuses: RwLock::new(status_array),
+            prefixes: RwLock::new(prefixes),
         })
         .await
         .expect("Error creating client");
