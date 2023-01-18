@@ -1,6 +1,7 @@
 mod config;
 mod handlers;
 mod helpers;
+mod commands;
 
 use crate::config::Config;
 use crate::handlers::messages::handle_message;

@@ -153,7 +153,6 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
 /// - `WATCHING` -> `Activity::watching`
 /// - `LISTENING` -> `Activity::listening`
 /// - `PLAYING` -> `Activity::playing`
-/// - `STREAMING` -> `Activity::streaming`
 /// - `COMPETING` -> `Activity::competing`
 ///
 /// Returns a Discord activity based on the status type and name.
@@ -174,7 +173,6 @@ pub fn get_activity(status: (&str, &str)) -> Activity {
     match status.0 {
         "LISTENING" => Activity::listening(status.1),
         "WATCHING" => Activity::watching(status.1),
-        "STREAMING" => Activity::streaming(status.1, "https://twitch.tv/"),
         "COMPETING" => Activity::competing(status.1),
         _ => Activity::playing(status.1),
     }

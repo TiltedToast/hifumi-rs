@@ -1,11 +1,13 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
+use serenity::model::prelude::*;
 use serenity::prelude::*;
-use serenity::{builder::CreateEmbed, model::prelude::*};
 
-use crate::helpers::utils::parse_target_user;
-use crate::helpers::{
-    types::{Handler, MessageCommandData, PrefixDoc},
-    utils::{is_indev, register_prefix},
+use crate::{
+    commands::miscellaneous::user_avatar,
+    helpers::{
+        types::{Handler, MessageCommandData, PrefixDoc},
+        utils::{is_indev, register_prefix},
+    },
 };
 
 pub async fn handle_message(handler: &Handler, ctx: &Context, msg: &Message) -> Result<()> {
@@ -48,7 +50,8 @@ pub async fn handle_message(handler: &Handler, ctx: &Context, msg: &Message) -> 
                         &ctx.http,
                         "I have set the prefix to `h!`. You can change it with `h!prefix`",
                     )
-                    .await?;
+                    .await
+                    .map_err(|_| anyhow!("Failed to send message"))?;
             }
         }
     }
@@ -92,23 +95,6 @@ async fn handle_command(data: MessageCommandData<'_>) -> Result<()> {
     } else if data.command == "pfp" {
         user_avatar(data).await?;
     }
-
-    Ok(())
-}
-
-async fn user_avatar(data: MessageCommandData<'_>) -> Result<()> {
-    let user = parse_target_user(&data, 1).await?;
-
-    let embed = CreateEmbed::default()
-        .title(format!("{}'s avatar", user.name))
-        .image(user.face())
-        .color(data.handler.config.embed_colour)
-        .to_owned();
-
-    data.msg
-        .channel_id
-        .send_message(&data.ctx, |m| m.set_embed(embed))
-        .await?;
 
     Ok(())
 }
