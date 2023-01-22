@@ -18,7 +18,6 @@ use rand::{thread_rng, Rng};
 use serenity::model::gateway::Activity;
 use serenity::prelude::*;
 
-
 /// Parses a user from the message content at the given index.
 /// If no user is found, the author of the message is returned.
 /// If the user is not found, an error is returned.
@@ -36,7 +35,9 @@ use serenity::prelude::*;
 pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) -> Result<User> {
     let user = if data.content.get(idx).is_some() {
         let user_id = data.content[idx].replace("<@", "").replace(">", "");
-        let user_id = user_id.parse::<u64>().map_err(|_| anyhow!("Invalid user ID"))?;
+        let user_id = user_id
+            .parse::<u64>()
+            .map_err(|_| anyhow!("Invalid User Id"))?;
         data.ctx
             .http
             .get_user(user_id)
@@ -170,10 +171,10 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
 /// assert_eq!(activity, Activity::watching("Star Wars"));
 /// ```
 pub fn get_activity(status: (&str, &str)) -> Activity {
-    match status.0 {
-        "LISTENING" => Activity::listening(status.1),
-        "WATCHING" => Activity::watching(status.1),
-        "COMPETING" => Activity::competing(status.1),
+    match status.0.to_lowercase().as_str() {
+        "listening" => Activity::listening(status.1),
+        "watching" => Activity::watching(status.1),
+        "competing" => Activity::competing(status.1),
         _ => Activity::playing(status.1),
     }
 }

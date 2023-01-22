@@ -1,7 +1,7 @@
+mod commands;
 mod config;
 mod handlers;
 mod helpers;
-mod commands;
 
 use crate::config::Config;
 use crate::handlers::messages::handle_message;
@@ -28,7 +28,10 @@ impl EventHandler for Handler {
         match handle_message(self, &ctx, &msg).await {
             Ok(_) => (),
             Err(e) => {
-                msg.channel_id.say(&ctx.http, e).await.unwrap();
+                match msg.channel_id.say(&ctx.http, e).await {
+                    Ok(_) => (),
+                    Err(e) => println!("Failed to send message, {e}"),
+                };
             }
         }
     }
@@ -123,7 +126,10 @@ async fn main() -> Result<()> {
             prefixes: RwLock::new(prefixes),
         })
         .await
-        .expect("Error creating client");
+        .unwrap_or_else(|err| {
+            println!("Error creating client: {:?}", err.to_string());
+            process::exit(1);
+        });
 
     if let Err(why) = client.start().await {
         println!("Client error: {why}");
