@@ -27,7 +27,7 @@ impl Config<'_> {
             mongo_uri: if inside_docker() {
                 "mongodb://db:27017/".to_string()
             } else {
-                env::var("MONGO_URI").unwrap_or_else(|_| "mongodb://127.0.0.1:27017/".to_string())
+                env::var("MONGO_URI").unwrap_or("mongodb://127.0.0.1:27017/".to_string())
             },
             exchange_api_key: env::var("EXCHANGE_API_KEY").unwrap_or_default(),
             imgur_client_id: env::var("IMGUR_CLIENT_ID").unwrap_or_default(),
@@ -36,7 +36,7 @@ impl Config<'_> {
             reddit_client_secret: env::var("REDDIT_CLIENT_SECRET").unwrap_or_default(),
             reddit_refresh_token: env::var("REDDIT_REFRESH_TOKEN").unwrap_or_default(),
             dev_mode: env::var("DEV_MODE").unwrap_or_default() == "true",
-            embed_colour: Colour::from(0xce_3a_9b),
+            embed_colour: Colour::from(0xCE_3A_9B),
             dev_channels: &[655484859405303809, 551588329003548683, 922679249058553857],
             bot_owners: &[258993932262834188, 207505077013839883],
             log_channel: 655484804405657642,

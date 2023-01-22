@@ -25,12 +25,11 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
     }
 
     let react_cmd = content[0].strip_prefix('$').unwrap_or_default().to_string();
-
-    let mut sub_cmd = String::new();
-
-    if content.len() > 1 {
-        sub_cmd = content[1].to_string();
-    }
+    
+    let sub_cmd = match content.get(1) {
+        Some(sub_cmd) => sub_cmd.to_owned(),
+        None => String::new(),
+    };
 
     let prefix_coll = handler
         .db_client
