@@ -17,7 +17,7 @@ pub struct MessageCommandData<'a> {
     pub command: String,
     pub react_cmd: String,
     pub sub_cmd: String,
-    pub handler: &'a Handler,
+    pub handler: &'a Handler<'a>,
     pub prefix: String,
 }
 
@@ -38,9 +38,9 @@ pub struct PrefixDoc {
 
 /// Handler contains the data necessary to run the bot. This includes the start time,
 /// the configuration, the database client, the statuses, and the prefixes.
-pub struct Handler {
+pub struct Handler<'a> {
     pub start_time: DateTime<Utc>,
-    pub config: Config,
+    pub config: Config<'a>,
     pub db_client: MongoClient,
     pub statuses: StatusVec,
     pub prefixes: PrefixMap,

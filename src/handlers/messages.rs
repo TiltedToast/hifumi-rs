@@ -10,7 +10,7 @@ use crate::{
     },
 };
 
-pub async fn handle_message(handler: &Handler, ctx: &Context, msg: &Message) -> Result<()> {
+pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message) -> Result<()> {
     if msg.author.bot {
         return Ok(());
     }

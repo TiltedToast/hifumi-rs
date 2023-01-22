@@ -23,7 +23,7 @@ use std::{env, process};
 use tokio::sync::RwLock;
 
 #[async_trait]
-impl EventHandler for Handler {
+impl EventHandler for Handler<'_> {
     async fn message(&self, ctx: Context, msg: Message) {
         match handle_message(self, &ctx, &msg).await {
             Ok(_) => (),

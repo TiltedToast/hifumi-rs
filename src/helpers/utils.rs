@@ -64,7 +64,7 @@ pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) ->
 pub async fn register_prefix(
     msg: &Message,
     prefix_coll: Collection<PrefixDoc>,
-    handler: &Handler,
+    handler: &Handler<'_>,
 ) -> Result<()> {
     let prefix_doc = PrefixDoc {
         _id: ObjectId::new(),
