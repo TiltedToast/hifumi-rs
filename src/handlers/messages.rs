@@ -25,11 +25,10 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
     }
 
     let react_cmd = content[0].strip_prefix('$').unwrap_or_default().to_string();
-    
-    let sub_cmd = match content.get(1) {
-        Some(sub_cmd) => sub_cmd.clone(),
-        None => String::new(),
-    };
+
+    let sub_cmd = content
+        .get(1)
+        .map_or_else(String::new, std::clone::Clone::clone);
 
     let prefix_coll = handler
         .db_client
@@ -55,21 +54,22 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
         }
     }
 
-    let mut prefix = match msg.guild_id {
-        Some(id) => match handler.prefixes.read().await.get(&id.to_string()) {
-            Some(prefix) => prefix.to_string(),
+    let prefix = if is_indev() {
+        "h?".to_string()
+    } else {
+        match msg.guild_id {
+            Some(id) => handler
+                .prefixes
+                .read()
+                .await
+                .get(&id.to_string())
+                .map_or_else(|| "h!".to_string(), std::string::ToString::to_string),
             None => "h!".to_string(),
-        },
-        None => "h!".to_string(),
-    };
-
-    if is_indev() {
-        prefix = "h?".to_string();
+        }
     }
+    .to_lowercase();
 
-    prefix = prefix.to_lowercase();
-
-    if msg.content.starts_with(&prefix) {
+    if msg.content.to_lowercase().starts_with(&prefix) {
         let command = content[0].replace(&prefix, "");
 
         handle_command(MessageCommandData {
