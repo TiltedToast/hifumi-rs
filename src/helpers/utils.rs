@@ -34,7 +34,7 @@ use serenity::prelude::*;
 /// The target user.
 pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) -> Result<User> {
     let user = if data.content.get(idx).is_some() {
-        let user_id = data.content[idx].replace("<@", "").replace(">", "");
+        let user_id = data.content[idx].replace("<@", "").replace('>', "");
         let user_id = user_id
             .parse::<u64>()
             .map_err(|_| anyhow!("Invalid User Id"))?;

@@ -27,7 +27,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
     let react_cmd = content[0].strip_prefix('$').unwrap_or_default().to_string();
     
     let sub_cmd = match content.get(1) {
-        Some(sub_cmd) => sub_cmd.to_owned(),
+        Some(sub_cmd) => sub_cmd.clone(),
         None => String::new(),
     };
 
@@ -43,7 +43,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
             .await
             .contains_key(&guild_id.to_string())
         {
-            if let Ok(()) = register_prefix(&msg, prefix_coll, handler).await {
+            if let Ok(()) = register_prefix(msg, prefix_coll, handler).await {
                 msg.channel_id
                     .say(
                         &ctx.http,

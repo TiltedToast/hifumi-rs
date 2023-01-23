@@ -10,7 +10,7 @@ pub async fn user_avatar(data: MessageCommandData<'_>) -> Result<()> {
         .title(format!("{}'s avatar", user.name))
         .image(user.face())
         .color(data.handler.config.embed_colour)
-        .to_owned();
+        .clone();
 
     data.msg
         .channel_id

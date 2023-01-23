@@ -27,7 +27,7 @@ impl Config<'_> {
             mongo_uri: if inside_docker() {
                 "mongodb://db:27017/".to_string()
             } else {
-                env::var("MONGO_URI").unwrap_or("mongodb://127.0.0.1:27017/".to_string())
+                env::var("MONGO_URI").unwrap_or_else(|_| "mongodb://127.0.0.1:27017/".to_string())
             },
             exchange_api_key: env::var("EXCHANGE_API_KEY").unwrap_or_default(),
             imgur_client_id: env::var("IMGUR_CLIENT_ID").unwrap_or_default(),
@@ -37,9 +37,13 @@ impl Config<'_> {
             reddit_refresh_token: env::var("REDDIT_REFRESH_TOKEN").unwrap_or_default(),
             dev_mode: env::var("DEV_MODE").unwrap_or_default() == "true",
             embed_colour: Colour::from(0xCE_3A_9B),
-            dev_channels: &[655484859405303809, 551588329003548683, 922679249058553857],
-            bot_owners: &[258993932262834188, 207505077013839883],
-            log_channel: 655484804405657642,
+            dev_channels: &[
+                655_484_859_405_303_809,
+                551_588_329_003_548_683,
+                922_679_249_058_553_857,
+            ],
+            bot_owners: &[258_993_932_262_834_188, 207_505_077_013_839_883],
+            log_channel: 655_484_804_405_657_642,
         };
 
         let missing_credentials = &config.check_config();
