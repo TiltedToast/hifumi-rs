@@ -75,3 +75,9 @@ impl Config<'_> {
         missing
     }
 }
+
+impl Default for Config<'_> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
