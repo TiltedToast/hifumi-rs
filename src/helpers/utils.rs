@@ -61,6 +61,10 @@ pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) ->
 ///
 /// * `()` - If the prefix was successfully registered
 /// * `Err` - If the prefix was not registered
+///
+/// # Errors
+/// * If the guild id is not found even though the message is from a guild (should never happen)
+/// * If inserting the prefix into the database fails
 pub async fn register_prefix(
     msg: &Message,
     prefix_coll: Collection<PrefixDoc>,
