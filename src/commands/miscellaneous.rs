@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use serenity::builder::CreateEmbed;
 
 use crate::helpers::{types::MessageCommandData, utils::parse_target_user};
@@ -15,7 +15,8 @@ pub async fn user_avatar(data: MessageCommandData<'_>) -> Result<()> {
     data.msg
         .channel_id
         .send_message(&data.ctx, |m| m.set_embed(embed))
-        .await?;
+        .await
+        .map_err(|_| anyhow!("Failed to send message"))?;
 
     Ok(())
 }
