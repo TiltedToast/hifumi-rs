@@ -113,8 +113,8 @@ async fn main() -> Result<()> {
         .try_collect::<Vec<PrefixDoc>>()
         .await?;
 
-    for prefix in prefix_array {
-        prefixes.insert(prefix.serverId.to_string(), prefix.prefix.to_string());
+    for prefix_doc in prefix_array {
+        prefixes.insert(prefix_doc.serverId, prefix_doc.prefix);
     }
 
     let mut client = DiscordClient::builder(token, intents)
@@ -127,7 +127,7 @@ async fn main() -> Result<()> {
         })
         .await
         .unwrap_or_else(|err| {
-            println!("Error creating client: {:?}", err.to_string());
+            println!("Error creating client: {err:?}");
             process::exit(1);
         });
 
