@@ -29,7 +29,7 @@ impl Config<'_> {
             } else {
                 env::var("MONGO_URI").unwrap_or_else(|_| "mongodb://127.0.0.1:27017/".to_string())
             },
-            exchange_api_key: env::var("EXCHANGE_API_KEY").unwrap(),
+            exchange_api_key: env::var("EXCHANGE_API_KEY").unwrap_or_default(),
             imgur_client_id: env::var("IMGUR_CLIENT_ID").unwrap_or_default(),
             imgur_client_secret: env::var("IMGUR_CLIENT_SECRET").unwrap_or_default(),
             reddit_client_id: env::var("REDDIT_CLIENT_ID").unwrap_or_default(),
