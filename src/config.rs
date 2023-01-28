@@ -37,11 +37,7 @@ impl Config<'_> {
             reddit_refresh_token: env::var("REDDIT_REFRESH_TOKEN").unwrap_or_default(),
             dev_mode: env::var("DEV_MODE").unwrap_or_default() == "true",
             embed_colour: Colour::from(0xCE_3A_9B),
-            dev_channels: &[
-                655484859405303809,
-                551588329003548683,
-                922679249058553857,
-            ],
+            dev_channels: &[655484859405303809, 551588329003548683, 922679249058553857],
             bot_owners: &[258993932262834188, 207505077013839883],
             log_channel: 655484804405657642,
         };
