@@ -32,6 +32,7 @@ use serenity::prelude::*;
 /// * `ctx` - The context of the message.
 /// * `handler` - The event handler of the bot.
 ///
+/// TODO: Add database logging.
 pub async fn error_log(
     message: &Message,
     error: &anyhow::Error,
@@ -65,6 +66,8 @@ pub async fn error_log(
         + &format!("**User:** {user_name} - {user_id}\n",)
         + &format!("**Command used:** {}\n", message.content)
         + &format!("**Error:** {error}");
+
+    eprintln!("{error_msg}");
 
     let error_channel = if handler
         .config
