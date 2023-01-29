@@ -31,11 +31,11 @@ impl EventHandler for Handler<'_> {
             Err(e) => {
                 match error_log(&msg, &e, &ctx, self).await {
                     Ok(_) => (),
-                    Err(e) => println!("Failed to log error, {e}"),
+                    Err(e) => eprintln!("Failed to log error, {e}"),
                 }
                 match msg.channel_id.say(&ctx.http, e).await {
                     Ok(_) => (),
-                    Err(e) => println!("Failed to send message, {e}"),
+                    Err(e) => eprintln!("Failed to send message, {e}"),
                 };
             }
         }
@@ -59,6 +59,7 @@ impl EventHandler for Handler<'_> {
         let status_loop = start_status_loop(&self.statuses, ctx);
 
         if is_indev() {
+            println!("Running in dev mode");
             status_loop.await;
         } else {
             println!("Running in production mode");
@@ -73,7 +74,7 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     let token = env::var("BOT_TOKEN").unwrap_or_else(|_| {
-        println!("Expected a bot token under BOT_TOKEN in the environment");
+        eprintln!("Expected a bot token under BOT_TOKEN in the environment");
         process::exit(1);
     });
     let intents = GatewayIntents::non_privileged()
@@ -90,12 +91,12 @@ async fn main() -> Result<()> {
     let mongo_options = ClientOptions::parse(&config.mongo_uri)
         .await
         .unwrap_or_else(|_| {
-            println!("Failed to parse MongoDB uri");
+            eprintln!("Failed to parse MongoDB uri");
             process::exit(1);
         });
 
     let mongo_client = MongoClient::with_options(mongo_options).unwrap_or_else(|_| {
-        println!("Failed to connect to MongoDB");
+        eprintln!("Failed to connect to MongoDB");
         process::exit(1);
     });
 
@@ -132,12 +133,12 @@ async fn main() -> Result<()> {
         })
         .await
         .unwrap_or_else(|err| {
-            println!("Error creating client: {err:?}");
+            eprintln!("Error creating client: {err:?}");
             process::exit(1);
         });
 
     if let Err(why) = client.start().await {
-        println!("Client error: {why}");
+        eprintln!("Client error: {why}");
     }
     Ok(())
 }
