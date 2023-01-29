@@ -32,10 +32,9 @@ use serenity::prelude::*;
 /// * `ctx` - The context of the message.
 /// * `handler` - The event handler of the bot.
 ///
-/// TODO: Figure out how to actually allow passing in an error directly.
 pub async fn error_log(
     message: &Message,
-    error: String,
+    error: &anyhow::Error,
     ctx: &Context,
     handler: &Handler<'_>,
 ) -> Result<()> {
@@ -141,7 +140,7 @@ pub async fn register_prefix(
         _id: ObjectId::new(),
         serverId: match msg.guild_id {
             Some(id) => id.to_string(),
-            None => return Err(anyhow!("No guild id found")),
+            None => return Err(anyhow!("No Guild Id found")),
         },
         prefix: "h!".to_string(),
     };

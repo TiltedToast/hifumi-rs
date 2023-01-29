@@ -29,7 +29,7 @@ impl EventHandler for Handler<'_> {
         match handle_message(self, &ctx, &msg).await {
             Ok(_) => (),
             Err(e) => {
-                match error_log(&msg, e.to_string(), &ctx, self).await {
+                match error_log(&msg, &e, &ctx, self).await {
                     Ok(_) => (),
                     Err(e) => println!("Failed to log error, {e}"),
                 }
