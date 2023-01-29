@@ -13,6 +13,7 @@ use chrono::format::strftime::StrftimeItems;
 use chrono::Utc;
 use dotenv::dotenv;
 use futures::stream::TryStreamExt;
+use helpers::utils::error_log;
 use mongodb::options::ClientOptions;
 use mongodb::Client as MongoClient;
 use serenity::model::prelude::*;
@@ -28,6 +29,10 @@ impl EventHandler for Handler<'_> {
         match handle_message(self, &ctx, &msg).await {
             Ok(_) => (),
             Err(e) => {
+                match error_log(&msg, e.to_string(), &ctx, self).await {
+                    Ok(_) => (),
+                    Err(e) => println!("Failed to log error, {e}"),
+                }
                 match msg.channel_id.say(&ctx.http, e).await {
                     Ok(_) => (),
                     Err(e) => println!("Failed to send message, {e}"),

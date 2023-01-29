@@ -1,7 +1,12 @@
+#![allow(clippy::unreadable_literal)]
+
 use anyhow::anyhow;
 use anyhow::Result;
 use bson::oid::ObjectId;
+use chrono::format::strftime::StrftimeItems;
+use chrono::Utc;
 use mongodb::Collection;
+use serenity::model::prelude::ChannelId;
 use serenity::model::prelude::Message;
 use serenity::model::user::User;
 use std::env;
@@ -17,6 +22,68 @@ use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use serenity::model::gateway::Activity;
 use serenity::prelude::*;
+
+/// Logs an error to the console and to the error channel.
+/// Also saves it to the database.
+///
+/// # Arguments
+/// * `message` - The message that caused the error.
+/// * `error` - The error that occurred.
+/// * `ctx` - The context of the message.
+/// * `handler` - The event handler of the bot.
+///
+/// TODO: Figure out how to actually allow passing in an error directly.
+pub async fn error_log(
+    message: &Message,
+    error: String,
+    ctx: &Context,
+    handler: &Handler<'_>,
+) -> Result<()> {
+    let date_format = StrftimeItems::new("%d/%m/%Y %H:%M:%S UTC");
+    let current_time = Utc::now().format_with_items(date_format);
+
+    let error_channel = message
+        .channel_id
+        .name(&ctx)
+        .await
+        .unwrap_or_else(|| "Unknown channel".into());
+
+    let guild_name = match message.guild(ctx) {
+        Some(guild) => guild.name,
+        None => "Direct Message".to_string(),
+    };
+
+    let guild_id = message
+        .guild_id
+        .map_or_else(|| "Unknown".to_string(), |id| id.to_string());
+
+    let (user_name, user_id) = (&message.author.name, message.author.id);
+
+    let error_msg = String::new()
+        + &format!("An Error occurred on {current_time}\n")
+        + &format!("**Server:** {guild_name} - {guild_id}\n")
+        + &format!("**Room:** {error_channel}\n")
+        + &format!("**User:** {user_name} - {user_id}\n",)
+        + &format!("**Command used:** {}\n", message.content)
+        + &format!("**Error:** {error}");
+
+    let error_channel = if handler
+        .config
+        .dev_channels
+        .contains(message.channel_id.as_u64())
+    {
+        message.channel_id
+    } else {
+        ChannelId(handler.config.log_channel)
+    };
+
+    error_channel
+        .say(&ctx.http, &error_msg)
+        .await
+        .map_err(|_| anyhow!("Error sending error message"))?;
+
+    Ok(())
+}
 
 /// Parses a user from the message content at the given index.
 /// If no user is found, the author of the message is returned.
