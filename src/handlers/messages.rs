@@ -3,7 +3,7 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 
 use crate::{
-    commands::miscellaneous::user_avatar,
+    commands::misc::user_avatar,
     helpers::{
         types::{Handler, MessageCommandData, PrefixDoc},
         utils::{is_indev, register_prefix},

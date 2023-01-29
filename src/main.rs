@@ -8,6 +8,9 @@ use crate::handlers::messages::handle_message;
 use crate::helpers::types::{Handler, PrefixDoc, StatusDoc};
 use crate::helpers::utils::{is_indev, start_status_loop};
 
+extern crate pretty_env_logger;
+#[macro_use] extern crate log;
+
 use anyhow::Result;
 use chrono::format::strftime::StrftimeItems;
 use chrono::Utc;
@@ -31,11 +34,11 @@ impl EventHandler for Handler<'_> {
             Err(e) => {
                 match error_log(&msg, &e, &ctx, self).await {
                     Ok(_) => (),
-                    Err(e) => eprintln!("Failed to log error, {e}"),
+                    Err(e) => error!("Failed to log error, {e}"),
                 }
                 match msg.channel_id.say(&ctx.http, e).await {
                     Ok(_) => (),
-                    Err(e) => eprintln!("Failed to send message, {e}"),
+                    Err(e) => error!("Failed to send message, {e}"),
                 };
             }
         }
@@ -46,23 +49,23 @@ impl EventHandler for Handler<'_> {
         let done_loading_time = Utc::now();
         let done_loading_formatted = done_loading_time.format_with_items(date_format);
 
-        println!(
+        info!(
             "Started up in {}ms on {}",
             done_loading_time.timestamp_millis() - self.start_time.timestamp_millis(),
             done_loading_formatted
         );
-        println!("Logged in as:");
-        println!("{}", ready.user.name);
-        println!("{}", ready.user.id);
-        println!("------------------");
+        info!("Logged in as:");
+        info!("{}", ready.user.name);
+        info!("{}", ready.user.id);
+        info!("------------------");
 
         let status_loop = start_status_loop(&self.statuses, ctx);
 
         if is_indev() {
-            println!("Running in dev mode");
+            info!("Running in dev mode");
             status_loop.await;
         } else {
-            println!("Running in production mode");
+            info!("Running in production mode");
             status_loop.await;
         }
     }
@@ -72,9 +75,10 @@ impl EventHandler for Handler<'_> {
 async fn main() -> Result<()> {
     let start_time = Utc::now();
     dotenv().ok();
+    pretty_env_logger::init();
 
     let token = env::var("BOT_TOKEN").unwrap_or_else(|_| {
-        eprintln!("Expected a bot token under BOT_TOKEN in the environment");
+        error!("Expected a bot token under BOT_TOKEN in the environment");
         process::exit(1);
     });
     let intents = GatewayIntents::non_privileged()
@@ -91,12 +95,12 @@ async fn main() -> Result<()> {
     let mongo_options = ClientOptions::parse(&config.mongo_uri)
         .await
         .unwrap_or_else(|_| {
-            eprintln!("Failed to parse MongoDB uri");
+            error!("Failed to parse MongoDB uri");
             process::exit(1);
         });
 
     let mongo_client = MongoClient::with_options(mongo_options).unwrap_or_else(|_| {
-        eprintln!("Failed to connect to MongoDB");
+        error!("Failed to connect to MongoDB");
         process::exit(1);
     });
 
@@ -133,12 +137,12 @@ async fn main() -> Result<()> {
         })
         .await
         .unwrap_or_else(|err| {
-            eprintln!("Error creating client: {err:?}");
+            error!("Error creating client: {err:?}");
             process::exit(1);
         });
 
     if let Err(why) = client.start().await {
-        eprintln!("Client error: {why}");
+        error!("Client error: {why}");
     }
     Ok(())
 }

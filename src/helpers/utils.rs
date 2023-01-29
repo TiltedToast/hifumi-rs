@@ -67,7 +67,12 @@ pub async fn error_log(
         + &format!("**Command used:** {}\n", message.content)
         + &format!("**Error:** {error}");
 
-    eprintln!("{error_msg}");
+    error!("An Error occurred on {current_time}");
+    error!("Server: {guild_name} - {guild_id}");
+    error!("Room: {error_channel}");
+    error!("User: {user_name} - {user_id}");
+    error!("Command used: {}", message.content);
+    error!("Error: {error}");
 
     let error_channel = if handler
         .config
@@ -142,7 +147,10 @@ pub async fn register_prefix(
     let prefix_doc = PrefixDoc {
         _id: ObjectId::new(),
         serverId: match msg.guild_id {
-            Some(id) => id.to_string(),
+            Some(id) => {
+                debug!("Registering prefix for guild: {}", id);
+                id.to_string()
+            }
             None => return Err(anyhow!("No Guild Id found")),
         },
         prefix: "h!".to_string(),
@@ -166,11 +174,12 @@ pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
         if let Some(status) = random_status {
             let activity = get_activity((&status.r#type, &status.status));
             ctx.set_activity(activity).await;
+            debug!("Set status to: {} {}", status.r#type, status.status);
         } else {
-            println!("No statuses found in database");
+            error!("No statuses found in database");
             return;
         }
-        sleep(Duration::from_secs(random_int_from_range(300, 900))).await;
+        sleep(Duration::from_secs(random_int_from_range(300, 900))).await; // 5-15 minutes
     }
 }
 
