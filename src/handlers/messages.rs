@@ -72,6 +72,8 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
     if msg.content.to_lowercase().starts_with(&prefix) {
         let command = content[0].replace(&prefix, "");
 
+        debug!("{} used command: {}", msg.author.id, command);
+
         handle_command(MessageCommandData {
             ctx,
             msg,
@@ -91,7 +93,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
 async fn handle_command(data: MessageCommandData<'_>) -> Result<()> {
     if data.command == "ping" {
         data.msg.channel_id.say(&data.ctx, "Pong!").await?;
-    } else if data.command == "pfp" {
+    } else if ["pfp", "avatar"].contains(&data.command.as_str()) {
         user_avatar(data).await?;
     }
 

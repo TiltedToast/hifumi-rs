@@ -4,7 +4,6 @@ use serenity::builder::CreateEmbed;
 use crate::helpers::{types::MessageCommandData, utils::parse_target_user};
 
 pub async fn user_avatar(data: MessageCommandData<'_>) -> Result<()> {
-    debug!("{} used 'user_avatar' command", data.msg.author.id);
     let user = parse_target_user(&data, 1).await?;
 
     let embed = CreateEmbed::default()

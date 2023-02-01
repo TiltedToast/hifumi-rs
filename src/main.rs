@@ -9,7 +9,8 @@ use crate::helpers::types::{Handler, PrefixDoc, StatusDoc};
 use crate::helpers::utils::{is_indev, start_status_loop};
 
 extern crate pretty_env_logger;
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 
 use anyhow::Result;
 use chrono::format::strftime::StrftimeItems;
@@ -95,7 +96,7 @@ async fn main() -> Result<()> {
     let mongo_options = ClientOptions::parse(&config.mongo_uri)
         .await
         .unwrap_or_else(|_| {
-            error!("Failed to parse MongoDB uri");
+            error!("Failed to parse MongoDB URI");
             process::exit(1);
         });
 

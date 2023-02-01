@@ -251,6 +251,11 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
 /// let activity = get_activity(status);
 ///
 /// assert_eq!(activity, Activity::watching("Star Wars"));
+///
+/// let status = ("EATING", "Pizza");
+/// let activity = get_activity(status);
+///
+/// assert_eq!(activity, Activity::playing("Pizza")
 /// ```
 pub fn get_activity(status: (&str, &str)) -> Activity {
     match status.0.to_lowercase().as_str() {
