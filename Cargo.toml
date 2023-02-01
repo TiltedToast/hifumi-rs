@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.68"
 chrono = "0.4.23"
-dotenv = "0.15.0"
 tokio = { version = "1.23.0", features = ["full"] }
 mongodb = "2.3.1"
 serde = "1.0.152"
@@ -18,6 +17,7 @@ futures = "0.3.25"
 rand = "0.8.5"
 log = "0.4.17"
 pretty_env_logger = "0.4.0"
+dotenvy = "0.15.6"
 
 
 [dependencies.serenity]

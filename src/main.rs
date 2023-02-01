@@ -15,7 +15,7 @@ extern crate log;
 use anyhow::Result;
 use chrono::format::strftime::StrftimeItems;
 use chrono::Utc;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use futures::stream::TryStreamExt;
 use helpers::utils::error_log;
 use mongodb::options::ClientOptions;
@@ -75,7 +75,10 @@ impl EventHandler for Handler<'_> {
 #[tokio::main]
 async fn main() -> Result<()> {
     let start_time = Utc::now();
-    dotenv().ok();
+    dotenv().unwrap_or_else(|_| {
+        error!("Failed to load .env file");
+        process::exit(1);
+    });
     pretty_env_logger::init();
 
     let token = env::var("BOT_TOKEN").unwrap_or_else(|_| {
