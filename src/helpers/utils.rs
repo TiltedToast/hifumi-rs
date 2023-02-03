@@ -222,6 +222,11 @@ pub fn is_indev() -> bool {
 /// use helpers::utils;
 /// let slice = [1, 2, 3, 4, 5];
 /// let random = utils::random_item(&slice);
+/// assert!(random.is_some());
+///
+/// let slice = [];
+/// let random = utils::random_item(&slice);
+/// assert!(random.is_none());
 /// ```
 pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
     let mut rng = thread_rng();
