@@ -172,7 +172,7 @@ pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
         let random_status = random_element_vec(&statuses.read().await);
 
         if let Some(status) = random_status {
-            let activity = get_activity((&status.r#type, &status.status));
+            let activity = get_activity(&status.r#type, &status.status);
             ctx.set_activity(activity).await;
             debug!("Set status to: {} {}", status.r#type, status.status);
         } else {
@@ -247,26 +247,23 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
 ///
 /// # Arguments
 ///
-/// * `status` - A tuple containing the status type and name.
+/// * `r#type` - The status type.
+/// * `status_msg` - The status message
 ///
 /// # Examples
 ///
 /// ```
-/// let status = ("WATCHING", "Star Wars");
-/// let activity = get_activity(status);
-///
+/// let activity = get_activity("WATCHING", "Star Wars");
 /// assert_eq!(activity, Activity::watching("Star Wars"));
 ///
-/// let status = ("EATING", "Pizza");
-/// let activity = get_activity(status);
-///
+/// let activity = get_activity("EATING", "Pizza");
 /// assert_eq!(activity, Activity::playing("Pizza")
 /// ```
-pub fn get_activity(status: (&str, &str)) -> Activity {
-    match status.0.to_lowercase().as_str() {
-        "listening" => Activity::listening(status.1),
-        "watching" => Activity::watching(status.1),
-        "competing" => Activity::competing(status.1),
-        _ => Activity::playing(status.1),
+pub fn get_activity(r#type: &str, status_msg: &str) -> Activity {
+    match r#type.to_lowercase().as_str() {
+        "listening" => Activity::listening(status_msg),
+        "watching" => Activity::watching(status_msg),
+        "competing" => Activity::competing(status_msg),
+        _ => Activity::playing(status_msg),
     }
 }
