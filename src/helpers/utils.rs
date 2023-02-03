@@ -192,8 +192,8 @@ pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
 ///
 /// # Example
 /// ```
-/// use helpers::utils::random_int_from_range;
-/// let random_number = random_int_from_range(1, 10);
+/// use helpers::utils;
+/// let random_number = utils::random_int_from_range(1, 10);
 /// assert!(random_number >= 1 && random_number <= 10);
 pub fn random_int_from_range(min: u64, max: u64) -> u64 {
     let mut rng = thread_rng();
