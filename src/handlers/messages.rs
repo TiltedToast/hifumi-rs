@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
@@ -42,14 +42,14 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
             .await
             .contains_key(&guild_id.to_string())
         {
-            if let Ok(()) = register_prefix(msg, prefix_coll, handler).await {
-                msg.channel_id
-                    .say(
-                        &ctx.http,
-                        "I have set the prefix to `h!`. You can change it with `h!prefix`",
-                    )
-                    .await
-                    .map_err(|_| anyhow!("Failed to send message"))?;
+            match register_prefix(msg, prefix_coll, handler).await {
+                Ok(id) => {
+                    debug!("Registered prefix for guild: {}", id);
+                }
+                Err(e) => {
+                    error!("Failed to register prefix: {}", e);
+                    msg.channel_id.say(&ctx.http, e).await?;
+                }
             }
         }
     }

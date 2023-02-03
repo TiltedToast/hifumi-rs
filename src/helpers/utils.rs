@@ -143,26 +143,27 @@ pub async fn register_prefix(
     msg: &Message,
     prefix_coll: Collection<PrefixDoc>,
     handler: &Handler<'_>,
-) -> Result<()> {
+) -> Result<String> {
     let prefix_doc = PrefixDoc {
         _id: ObjectId::new(),
         serverId: match msg.guild_id {
-            Some(id) => {
-                debug!("Registering prefix for guild: {}", id);
-                id.to_string()
-            }
+            Some(id) => id.to_string(),
             None => return Err(anyhow!("No Guild Id found")),
         },
         prefix: "h!".to_string(),
     };
-    prefix_coll.insert_one(&prefix_doc, None).await?;
+    prefix_coll
+        .insert_one(&prefix_doc, None)
+        .await
+        .map_err(|_| anyhow!("Failed to insert prefix into database"))?;
+
     handler
         .prefixes
         .write()
         .await
-        .insert(prefix_doc.serverId, prefix_doc.prefix);
+        .insert(prefix_doc.serverId.clone(), prefix_doc.prefix);
 
-    Ok(())
+    Ok(prefix_doc.serverId)
 }
 
 /// A function that takes a vector of statuses and a context
