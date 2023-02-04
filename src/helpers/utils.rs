@@ -84,10 +84,7 @@ pub async fn error_log(
         ChannelId(handler.config.log_channel)
     };
 
-    error_channel
-        .say(&ctx.http, &error_msg)
-        .await
-        .map_err(|_| anyhow!("Error sending error message"))?;
+    error_channel.say(&ctx.http, &error_msg).await?;
 
     Ok(())
 }
