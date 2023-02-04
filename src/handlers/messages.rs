@@ -90,12 +90,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
 
 async fn handle_command(data: MessageCommandData<'_>) -> Result<()> {
     match data.command.as_str() {
-        "ping" => {
-            data.msg.channel_id.say(&data.ctx, "Pong!").await?;
-        }
-        "pfp" | "avatar" => {
-            user_avatar(data).await?;
-        }
+        "pfp" | "avatar" => user_avatar(data).await?,
         _ => {}
     }
 
