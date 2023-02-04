@@ -64,11 +64,10 @@ impl EventHandler for Handler<'_> {
 
         if is_indev() {
             info!("Running in dev mode");
-            status_loop.await;
         } else {
             info!("Running in production mode");
-            status_loop.await;
         }
+        status_loop.await;
     }
 }
 
