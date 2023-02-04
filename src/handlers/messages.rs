@@ -20,11 +20,9 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
         .map(str::to_lowercase)
         .collect::<Vec<String>>();
 
-    if content.is_empty() {
-        return Ok(());
-    }
-
-    let react_cmd = content[0].strip_prefix('$').unwrap_or_default().to_string();
+    let react_cmd = content.get(0).map_or_else(String::new, |cmd| {
+        cmd.strip_prefix('$').unwrap_or_default().to_string()
+    });
 
     let sub_cmd = content
         .get(1)
