@@ -89,10 +89,14 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
 }
 
 async fn handle_command(data: MessageCommandData<'_>) -> Result<()> {
-    if data.command == "ping" {
-        data.msg.channel_id.say(&data.ctx, "Pong!").await?;
-    } else if ["pfp", "avatar"].contains(&data.command.as_str()) {
-        user_avatar(data).await?;
+    match data.command.as_str() {
+        "ping" => {
+            data.msg.channel_id.say(&data.ctx, "Pong!").await?;
+        }
+        "pfp" | "avatar" => {
+            user_avatar(data).await?;
+        }
+        _ => {}
     }
 
     Ok(())
