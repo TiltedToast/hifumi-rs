@@ -152,7 +152,7 @@ pub async fn register_prefix(
     prefix_coll
         .insert_one(&prefix_doc, None)
         .await
-        .map_err(|_| anyhow!("Failed to insert prefix into database"))?;
+        .map_err(|err| anyhow!("Failed to insert prefix into database: {:?}", err))?;
 
     handler
         .prefixes
