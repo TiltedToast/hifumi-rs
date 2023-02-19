@@ -149,10 +149,7 @@ pub async fn register_prefix(
         },
         prefix: "h!".to_string(),
     };
-    prefix_coll
-        .insert_one(&prefix_doc, None)
-        .await
-        .map_err(|err| anyhow!("Failed to insert prefix into database: {:?}", err))?;
+    prefix_coll.insert_one(&prefix_doc, None).await?;
 
     handler
         .prefixes
