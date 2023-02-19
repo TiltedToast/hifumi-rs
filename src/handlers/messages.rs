@@ -45,8 +45,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
                     debug!("Registered prefix for guild: {}", id);
                 }
                 Err(e) => {
-                    error!("Failed to register prefix: {}", e);
-                    msg.channel_id.say(&ctx.http, e).await?;
+                    error!("Failed to register prefix for guild {}: {}", guild_id, e);
                 }
             }
         }
