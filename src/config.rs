@@ -1,6 +1,6 @@
 use serenity::utils::{Color, Colour};
 
-use crate::helpers::utils::inside_docker;
+use crate::helpers::utils::{inside_docker, is_indev};
 use std::{env, process};
 
 #[derive(Debug)]
@@ -35,7 +35,7 @@ impl Config<'_> {
             reddit_client_id: env::var("REDDIT_CLIENT_ID").unwrap_or_default(),
             reddit_client_secret: env::var("REDDIT_CLIENT_SECRET").unwrap_or_default(),
             reddit_refresh_token: env::var("REDDIT_REFRESH_TOKEN").unwrap_or_default(),
-            dev_mode: env::var("DEV_MODE").unwrap_or_default() == "true",
+            dev_mode: is_indev(),
             embed_colour: Colour::from(0xCE_3A_9B),
             dev_channels: &[655484859405303809, 551588329003548683, 922679249058553857],
             bot_owners: &[258993932262834188, 207505077013839883],
