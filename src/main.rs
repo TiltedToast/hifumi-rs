@@ -67,7 +67,8 @@ impl EventHandler for Handler<'_> {
         } else {
             info!("Running in production mode");
         }
-        status_loop.await;
+
+        futures::join!(status_loop);
     }
 }
 
