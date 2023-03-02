@@ -144,7 +144,7 @@ pub async fn register_prefix(
     let prefix_doc = PrefixDoc {
         _id: ObjectId::new(),
         serverId: guild_id.to_string(),
-        prefix: "h!".to_string(),
+        prefix: String::from("h!"),
     };
     prefix_coll.insert_one(&prefix_doc, None).await?;
 
