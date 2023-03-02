@@ -7,6 +7,7 @@ use chrono::format::strftime::StrftimeItems;
 use chrono::Utc;
 use mongodb::Collection;
 use serenity::model::prelude::ChannelId;
+use serenity::model::prelude::GuildId;
 use serenity::model::prelude::Message;
 use serenity::model::user::User;
 use std::env;
@@ -124,29 +125,25 @@ pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) ->
 ///
 /// # Arguments
 ///
-/// * `msg` - The message that triggered the command
+/// * `guild_id` - The Id of the guild to register the prefix for
 /// * `prefix_coll` - The `MongoDB` collection for the prefixes
 /// * `handler` - The Event Handler that dispatches the events
 ///
 /// # Returns
 ///
-/// * `()` - If the prefix was successfully registered
+/// * `String` - If the prefix was successfully registered, returns the guild Id
 /// * `Err` - If the prefix was not registered
 ///
 /// # Errors
-/// * If the guild id is not found even though the message is from a guild (should never happen)
 /// * If inserting the prefix into the database fails
 pub async fn register_prefix(
-    msg: &Message,
+    guild_id: GuildId,
     prefix_coll: Collection<PrefixDoc>,
     handler: &Handler<'_>,
 ) -> Result<String> {
     let prefix_doc = PrefixDoc {
         _id: ObjectId::new(),
-        serverId: match msg.guild_id {
-            Some(id) => id.to_string(),
-            None => return Err(anyhow!("No Guild Id found")),
-        },
+        serverId: guild_id.to_string(),
         prefix: "h!".to_string(),
     };
     prefix_coll.insert_one(&prefix_doc, None).await?;

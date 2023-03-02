@@ -40,7 +40,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
             .await
             .contains_key(&guild_id.to_string())
         {
-            match register_prefix(msg, prefix_coll, handler).await {
+            match register_prefix(guild_id, prefix_coll, handler).await {
                 Ok(id) => {
                     debug!("Registered prefix for guild: {}", id);
                 }
