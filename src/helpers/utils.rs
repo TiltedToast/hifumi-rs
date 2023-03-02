@@ -187,8 +187,7 @@ pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
 /// let random_number = utils::random_int_from_range(1, 10);
 /// assert!(random_number >= 1 && random_number <= 10);
 pub fn random_int_from_range(min: u64, max: u64) -> u64 {
-    let mut rng = thread_rng();
-    Rng::gen_range(&mut rng, min..=max)
+    thread_rng().gen_range(min..=max)
 }
 
 /// Check if the bot is running inside a docker container
