@@ -47,7 +47,7 @@ pub async fn error_log(
         .channel_id
         .name(&ctx)
         .await
-        .unwrap_or_else(|| "Unknown channel".into());
+        .unwrap_or_else(|| "Unknown".into());
 
     let guild_name = match message.guild(ctx) {
         Some(guild) => guild.name,
