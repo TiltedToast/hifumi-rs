@@ -163,10 +163,10 @@ pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
     loop {
         let random_status = random_element_vec(&statuses.read().await);
 
-        if let Some(status) = random_status {
-            let activity = get_activity(&status.r#type, &status.status);
+        if let Some(status_doc) = random_status {
+            let activity = get_activity(&status_doc.r#type, &status_doc.status);
             ctx.set_activity(activity).await;
-            debug!("Set status to: {} {}", status.r#type, status.status);
+            debug!("Set status to: {} {}", status_doc.r#type, status_doc.status);
         } else {
             error!("No statuses found in database");
             return;
