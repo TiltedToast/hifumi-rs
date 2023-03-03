@@ -143,7 +143,7 @@ pub async fn register_prefix(
 ) -> Result<String> {
     let prefix_doc = PrefixDoc {
         _id: ObjectId::new(),
-        serverId: guild_id.to_string(),
+        server_id: guild_id.to_string(),
         prefix: String::from("h!"),
     };
     prefix_coll.insert_one(&prefix_doc, None).await?;
@@ -152,9 +152,9 @@ pub async fn register_prefix(
         .prefixes
         .write()
         .await
-        .insert(prefix_doc.serverId.clone(), prefix_doc.prefix);
+        .insert(prefix_doc.server_id.clone(), prefix_doc.prefix);
 
-    Ok(prefix_doc.serverId)
+    Ok(prefix_doc.server_id)
 }
 
 /// A function that takes a vector of statuses and a context

@@ -29,10 +29,10 @@ pub struct StatusDoc {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[allow(non_snake_case)]
 pub struct PrefixDoc {
     pub _id: ObjectId,
-    pub serverId: String,
+    #[serde(rename = "serverId")]
+    pub server_id: String,
     pub prefix: String,
 }
 

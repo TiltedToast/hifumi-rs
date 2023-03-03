@@ -128,7 +128,7 @@ async fn main() -> Result<()> {
         .await?;
 
     for prefix_doc in prefix_array {
-        prefixes.insert(prefix_doc.serverId, prefix_doc.prefix);
+        prefixes.insert(prefix_doc.server_id, prefix_doc.prefix);
     }
 
     let mut client = DiscordClient::builder(token, intents)
