@@ -20,13 +20,19 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
         .map(str::to_lowercase)
         .collect::<Vec<String>>();
 
-    let react_cmd = content.get(0).map_or_else(String::new, |cmd| {
-        cmd.strip_prefix('$').unwrap_or_default().to_string()
-    });
+    let react_cmd = match content.get(0) {
+        Some(cmd) => cmd
+            .strip_prefix('$')
+            .unwrap_or_default()
+            .to_string()
+            .to_lowercase(),
+        None => String::new(),
+    };
 
-    let sub_cmd = content
-        .get(1)
-        .map_or_else(String::new, std::clone::Clone::clone);
+    let sub_cmd = match content.get(1) {
+        Some(cmd) => cmd.to_string().to_lowercase(),
+        None => String::new(),
+    };
 
     let prefix_coll = handler
         .db_client
