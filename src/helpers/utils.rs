@@ -54,9 +54,10 @@ pub async fn error_log(
         None => "Direct Message".to_string(),
     };
 
-    let guild_id = message
-        .guild_id
-        .map_or_else(|| "Unknown".to_string(), |id| id.to_string());
+    let guild_id = match message.guild_id {
+        Some(id) => id.to_string(),
+        None => "Unknown".to_string(),
+    };
 
     let (user_name, user_id) = (&message.author.name, message.author.id);
 
