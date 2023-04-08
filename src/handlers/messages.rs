@@ -21,16 +21,12 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
         .collect::<Vec<String>>();
 
     let react_cmd = match content.get(0) {
-        Some(cmd) => cmd
-            .strip_prefix('$')
-            .unwrap_or_default()
-            .to_string()
-            .to_lowercase(),
+        Some(cmd) => cmd.strip_prefix('$').unwrap_or_default().to_lowercase(),
         None => String::new(),
     };
 
     let sub_cmd = match content.get(1) {
-        Some(cmd) => cmd.to_string().to_lowercase(),
+        Some(cmd) => cmd.to_lowercase(),
         None => String::new(),
     };
 
