@@ -17,8 +17,8 @@ pub struct MessageCommandData<'a> {
     pub msg:       &'a Message,
     pub content:   Vec<String>,
     pub command:   String,
-    pub react_cmd: String,
-    pub sub_cmd:   String,
+    pub react_cmd: Option<String>,
+    pub sub_cmd:   Option<String>,
     pub handler:   &'a Handler<'a>,
     pub prefix:    String,
 }

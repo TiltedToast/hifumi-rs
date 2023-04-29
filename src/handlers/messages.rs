@@ -1,3 +1,5 @@
+use std::string::ToString;
+
 use anyhow::Result;
 use serenity::{model::prelude::*, prelude::*};
 
@@ -19,15 +21,11 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
         .map(str::to_lowercase)
         .collect::<Vec<String>>();
 
-    let react_cmd = match content.get(0) {
-        Some(cmd) => cmd.strip_prefix('$').unwrap_or_default().to_lowercase(),
-        None => String::new(),
-    };
+    let react_cmd = content
+        .get(0)
+        .and_then(|cmd| cmd.strip_prefix('$').map(str::to_lowercase));
 
-    let sub_cmd = match content.get(1) {
-        Some(cmd) => cmd.to_lowercase(),
-        None => String::new(),
-    };
+    let sub_cmd = content.get(1).and_then(|cmd| Some(cmd.to_lowercase()));
 
     let prefix_coll = handler
         .db_client
@@ -61,7 +59,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
                 .read()
                 .await
                 .get(&id.to_string())
-                .map_or_else(|| "h!".to_string(), std::string::ToString::to_string),
+                .map_or("h!".to_string(), ToString::to_string),
             None => "h!".to_string(),
         }
     }
