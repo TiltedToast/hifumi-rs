@@ -86,7 +86,6 @@ async fn main() -> Result<()> {
 
     #[rustfmt::skip]
     formatted_builder()
-        .format_timestamp(Some(TimestampPrecision::Seconds))
         .filter(Some("hifumi"), LevelFilter::Trace)
         .format(|formatter, record| {
             let mut style = formatter.style();
