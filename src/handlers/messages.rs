@@ -25,7 +25,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
         .get(0)
         .and_then(|cmd| cmd.strip_prefix('$').map(str::to_lowercase));
 
-    let sub_cmd = content.get(1).and_then(|cmd| Some(cmd.to_lowercase()));
+    let sub_cmd = content.get(1).map(|cmd| cmd.to_lowercase());
 
     let prefix_coll = handler
         .db_client
