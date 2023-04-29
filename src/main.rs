@@ -3,33 +3,32 @@ mod config;
 mod handlers;
 mod helpers;
 
-use crate::config::Config;
-use crate::handlers::messages::handle_message;
-use crate::helpers::types::{Handler, PrefixDoc, StatusDoc};
-use crate::helpers::utils::{is_indev, start_status_loop};
+use crate::{
+    config::Config,
+    handlers::messages::handle_message,
+    helpers::{
+        types::{Handler, PrefixDoc, StatusDoc},
+        utils::{is_indev, start_status_loop},
+    },
+};
 
 #[macro_use]
 extern crate log;
 
 use log::{Level, LevelFilter};
-use pretty_env_logger::env_logger::fmt::Color;
-use pretty_env_logger::env_logger::TimestampPrecision;
-use pretty_env_logger::formatted_builder;
+use pretty_env_logger::{
+    env_logger::{fmt::Color, TimestampPrecision},
+    formatted_builder,
+};
 
 use anyhow::Result;
-use chrono::format::strftime::StrftimeItems;
-use chrono::Utc;
+use chrono::{format::strftime::StrftimeItems, Utc};
 use dotenvy::dotenv;
 use futures::stream::TryStreamExt;
 use helpers::utils::error_log;
-use mongodb::options::ClientOptions;
-use mongodb::Client as MongoClient;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
-use serenity::{async_trait, Client as DiscordClient};
-use std::collections::HashMap;
-use std::io::Write;
-use std::{env, process};
+use mongodb::{options::ClientOptions, Client as MongoClient};
+use serenity::{async_trait, model::prelude::*, prelude::*, Client as DiscordClient};
+use std::{collections::HashMap, env, io::Write, process};
 use tokio::sync::RwLock;
 
 #[async_trait]

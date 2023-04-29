@@ -1,28 +1,20 @@
 #![allow(clippy::unreadable_literal)]
 
-use anyhow::anyhow;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use bson::oid::ObjectId;
-use chrono::format::strftime::StrftimeItems;
-use chrono::Utc;
+use chrono::{format::strftime::StrftimeItems, Utc};
 use mongodb::Collection;
-use serenity::model::prelude::ChannelId;
-use serenity::model::prelude::GuildId;
-use serenity::model::prelude::Message;
-use serenity::model::user::User;
+use serenity::model::{
+    prelude::{ChannelId, GuildId, Message},
+    user::User,
+};
 use std::env;
-use tokio::time::sleep;
-use tokio::time::Duration;
+use tokio::time::{sleep, Duration};
 
-use super::types::Handler;
-use super::types::MessageCommandData;
-use super::types::PrefixDoc;
-use super::types::StatusVec;
+use super::types::{Handler, MessageCommandData, PrefixDoc, StatusVec};
 
-use rand::seq::SliceRandom;
-use rand::{thread_rng, Rng};
-use serenity::model::gateway::Activity;
-use serenity::prelude::*;
+use rand::{seq::SliceRandom, thread_rng, Rng};
+use serenity::{model::gateway::Activity, prelude::*};
 
 /// Logs an error to the console and to the error channel.
 /// Also saves it to the database.

@@ -1,6 +1,5 @@
 use anyhow::Result;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::{model::prelude::*, prelude::*};
 
 use crate::{
     commands::misc::user_avatar,
