@@ -3,15 +3,6 @@ mod config;
 mod handlers;
 mod helpers;
 
-use crate::{
-    config::Config,
-    handlers::messages::handle_message,
-    helpers::{
-        types::{Handler, PrefixDoc, StatusDoc},
-        utils::{is_indev, start_status_loop},
-    },
-};
-
 #[macro_use]
 extern crate log;
 
@@ -30,6 +21,15 @@ use pretty_env_logger::{
 };
 use serenity::{async_trait, model::prelude::*, prelude::*, Client as DiscordClient};
 use tokio::sync::RwLock;
+
+use crate::{
+    config::Config,
+    handlers::messages::handle_message,
+    helpers::{
+        types::{Handler, PrefixDoc, StatusDoc},
+        utils::{is_indev, start_status_loop},
+    },
+};
 
 #[async_trait]
 impl EventHandler for Handler<'_> {
