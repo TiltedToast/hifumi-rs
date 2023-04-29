@@ -15,10 +15,7 @@ use futures::stream::TryStreamExt;
 use helpers::utils::error_log;
 use log::{Level, LevelFilter};
 use mongodb::{options::ClientOptions, Client as MongoClient};
-use pretty_env_logger::{
-    env_logger::{fmt::Color, TimestampPrecision},
-    formatted_builder,
-};
+use pretty_env_logger::{env_logger::fmt::Color, formatted_builder};
 use serenity::{async_trait, model::prelude::*, prelude::*, Client as DiscordClient};
 use tokio::sync::RwLock;
 
