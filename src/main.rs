@@ -85,6 +85,7 @@ async fn main() -> Result<()> {
         process::exit(1);
     });
 
+    #[rustfmt::skip]
     formatted_builder()
         .format_timestamp(Some(TimestampPrecision::Seconds))
         .filter(Some("hifumi"), LevelFilter::Trace)
@@ -93,8 +94,8 @@ async fn main() -> Result<()> {
             match record.level() {
                 Level::Trace => style.set_color(Color::Rgb(138, 43, 226)),
                 Level::Debug => style.set_color(Color::Rgb(252, 233, 58)),
-                Level::Info => style.set_color(Color::Green),
-                Level::Warn => style.set_color(Color::Rgb(255, 140, 0)),
+                Level::Info  => style.set_color(Color::Green),
+                Level::Warn  => style.set_color(Color::Rgb(255, 140, 0)),
                 Level::Error => style.set_color(Color::Red),
             };
             writeln!(

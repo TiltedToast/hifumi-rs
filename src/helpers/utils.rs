@@ -225,6 +225,7 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
     vec.choose(&mut rng).cloned()
 }
 
+#[rustfmt::skip]
 /// Maps a string and text to a serenity activity
 ///
 /// The first string is the type of activity, the second is the text to use for the activity
@@ -254,7 +255,7 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
 pub fn get_activity(r#type: &str, status_msg: &str) -> Activity {
     match r#type.to_lowercase().as_str() {
         "listening" => Activity::listening(status_msg),
-        "watching" => Activity::watching(status_msg),
+        "watching"  => Activity::watching(status_msg),
         "competing" => Activity::competing(status_msg),
         _ => Activity::playing(status_msg),
     }
