@@ -11,6 +11,11 @@ use crate::helpers::utils::{is_indev, start_status_loop};
 #[macro_use]
 extern crate log;
 
+use log::{Level, LevelFilter};
+use pretty_env_logger::env_logger::fmt::Color;
+use pretty_env_logger::env_logger::TimestampPrecision;
+use pretty_env_logger::formatted_builder;
+
 use anyhow::Result;
 use chrono::format::strftime::StrftimeItems;
 use chrono::Utc;
@@ -23,6 +28,7 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::{async_trait, Client as DiscordClient};
 use std::collections::HashMap;
+use std::io::Write;
 use std::{env, process};
 use tokio::sync::RwLock;
 
@@ -75,10 +81,38 @@ impl EventHandler for Handler<'_> {
 async fn main() -> Result<()> {
     let start_time = Utc::now();
     dotenv().unwrap_or_else(|_| {
-        error!("Failed to load .env file");
+        eprintln!("Failed to load .env file");
         process::exit(1);
     });
-    env_logger::init();
+
+    formatted_builder()
+        .format_timestamp(Some(TimestampPrecision::Seconds))
+        .filter(Some("hifumi"), LevelFilter::Trace)
+        .format(|buf, record| {
+            let mut style = buf.style();
+            match record.level() {
+                Level::Trace => style.set_color(Color::Rgb(138, 43, 226)),
+                Level::Debug => style.set_color(Color::Rgb(252, 233, 58)),
+                Level::Info => style.set_color(Color::Green),
+                Level::Warn => style.set_color(Color::Rgb(255, 140, 0)),
+                Level::Error => style.set_color(Color::Red),
+            };
+            writeln!(
+                buf,
+                "{} {} {}",
+                style.value(format_args!(
+                    "{}",
+                    match record.level() {
+                        Level::Info => "INFO ",
+                        Level::Warn => "WARN ",
+                        _ => record.level().as_str(),
+                    }
+                )),
+                format_args!("{} UTC:", buf.timestamp()),
+                record.args(),
+            )
+        })
+        .init();
 
     let token = env::var("BOT_TOKEN").unwrap_or_else(|_| {
         error!("Expected a bot token under BOT_TOKEN in the environment");
