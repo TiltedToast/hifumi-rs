@@ -8,7 +8,6 @@ use crate::handlers::messages::handle_message;
 use crate::helpers::types::{Handler, PrefixDoc, StatusDoc};
 use crate::helpers::utils::{is_indev, start_status_loop};
 
-extern crate pretty_env_logger;
 #[macro_use]
 extern crate log;
 
@@ -79,7 +78,7 @@ async fn main() -> Result<()> {
         error!("Failed to load .env file");
         process::exit(1);
     });
-    pretty_env_logger::init();
+    env_logger::init();
 
     let token = env::var("BOT_TOKEN").unwrap_or_else(|_| {
         error!("Expected a bot token under BOT_TOKEN in the environment");
