@@ -88,8 +88,8 @@ async fn main() -> Result<()> {
     formatted_builder()
         .format_timestamp(Some(TimestampPrecision::Seconds))
         .filter(Some("hifumi"), LevelFilter::Trace)
-        .format(|buf, record| {
-            let mut style = buf.style();
+        .format(|formatter, record| {
+            let mut style = formatter.style();
             match record.level() {
                 Level::Trace => style.set_color(Color::Rgb(138, 43, 226)),
                 Level::Debug => style.set_color(Color::Rgb(252, 233, 58)),
@@ -98,7 +98,7 @@ async fn main() -> Result<()> {
                 Level::Error => style.set_color(Color::Red),
             };
             writeln!(
-                buf,
+                formatter,
                 "{} {} {}",
                 style.value(format_args!(
                     "{}",
@@ -108,7 +108,7 @@ async fn main() -> Result<()> {
                         _ => record.level().as_str(),
                     }
                 )),
-                format_args!("{} UTC:", buf.timestamp()),
+                format_args!("{} UTC:", formatter.timestamp()),
                 record.args(),
             )
         })
