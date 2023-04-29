@@ -15,20 +15,20 @@ use crate::{
 #[macro_use]
 extern crate log;
 
-use log::{Level, LevelFilter};
-use pretty_env_logger::{
-    env_logger::{fmt::Color, TimestampPrecision},
-    formatted_builder,
-};
+use std::{collections::HashMap, env, io::Write, process};
 
 use anyhow::Result;
 use chrono::{format::strftime::StrftimeItems, Utc};
 use dotenvy::dotenv;
 use futures::stream::TryStreamExt;
 use helpers::utils::error_log;
+use log::{Level, LevelFilter};
 use mongodb::{options::ClientOptions, Client as MongoClient};
+use pretty_env_logger::{
+    env_logger::{fmt::Color, TimestampPrecision},
+    formatted_builder,
+};
 use serenity::{async_trait, model::prelude::*, prelude::*, Client as DiscordClient};
-use std::{collections::HashMap, env, io::Write, process};
 use tokio::sync::RwLock;
 
 #[async_trait]

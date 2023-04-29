@@ -1,7 +1,8 @@
+use std::{env, process};
+
 use serenity::utils::{Color, Colour};
 
 use crate::helpers::utils::{inside_docker, is_indev};
-use std::{env, process};
 
 #[derive(Debug)]
 pub struct Config<'a> {

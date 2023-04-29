@@ -1,20 +1,23 @@
 #![allow(clippy::unreadable_literal)]
 
+use std::env;
+
 use anyhow::{anyhow, Result};
 use bson::oid::ObjectId;
 use chrono::{format::strftime::StrftimeItems, Utc};
 use mongodb::Collection;
-use serenity::model::{
-    prelude::{ChannelId, GuildId, Message},
-    user::User,
+use rand::{seq::SliceRandom, thread_rng, Rng};
+use serenity::{
+    model::{
+        gateway::Activity,
+        prelude::{ChannelId, GuildId, Message},
+        user::User,
+    },
+    prelude::*,
 };
-use std::env;
 use tokio::time::{sleep, Duration};
 
 use super::types::{Handler, MessageCommandData, PrefixDoc, StatusVec};
-
-use rand::{seq::SliceRandom, thread_rng, Rng};
-use serenity::{model::gateway::Activity, prelude::*};
 
 /// Logs an error to the console and to the error channel.
 /// Also saves it to the database.
@@ -135,9 +138,9 @@ pub async fn register_prefix(
     handler: &Handler<'_>,
 ) -> Result<String> {
     let prefix_doc = PrefixDoc {
-        _id: ObjectId::new(),
+        _id:       ObjectId::new(),
         server_id: guild_id.to_string(),
-        prefix: String::from("h!"),
+        prefix:    String::from("h!"),
     };
     prefix_coll.insert_one(&prefix_doc, None).await?;
 
@@ -151,7 +154,8 @@ pub async fn register_prefix(
 }
 
 /// A function that takes a vector of statuses and a context
-/// and sets the bot's status to a random status from the vector every 5-15 minutes.
+/// and sets the bot's status to a random status from the vector every 5-15
+/// minutes.
 pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
     loop {
         let random_status = random_element_vec(&statuses.read().await);
@@ -198,7 +202,8 @@ pub fn is_indev() -> bool {
     env::var("DEV_MODE").unwrap_or_default() == "true"
 }
 
-/// Returns a random item from a slice, Some(item) if the slice is not empty, None otherwise.
+/// Returns a random item from a slice, Some(item) if the slice is not empty,
+/// None otherwise.
 ///
 /// # Examples
 ///
