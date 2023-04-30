@@ -12,7 +12,6 @@ use anyhow::Result;
 use chrono::{format::strftime::StrftimeItems, Utc};
 use dotenvy::dotenv;
 use futures::stream::TryStreamExt;
-use helpers::utils::error_log;
 use log::{Level, LevelFilter};
 use mongodb::{options::ClientOptions, Client as MongoClient};
 use pretty_env_logger::{env_logger::fmt::Color, formatted_builder};
@@ -24,7 +23,7 @@ use crate::{
     handlers::messages::handle_message,
     helpers::{
         types::{Handler, PrefixDoc, StatusDoc},
-        utils::{is_indev, start_status_loop},
+        utils::{error_log, is_indev, start_status_loop},
     },
 };
 
