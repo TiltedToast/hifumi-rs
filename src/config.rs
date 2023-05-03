@@ -28,7 +28,7 @@ impl Config<'_> {
             mongo_uri: if inside_docker() {
                 "mongodb://db:27017/".to_string()
             } else {
-                env::var("MONGO_URI").unwrap_or_else(|_| "mongodb://127.0.0.1:27017/".to_string())
+                env::var("MONGO_URI").unwrap_or("mongodb://127.0.0.1:27017/".to_string())
             },
             exchange_api_key: env::var("EXCHANGE_API_KEY").unwrap_or_default(),
             imgur_client_id: env::var("IMGUR_CLIENT_ID").unwrap_or_default(),
