@@ -121,7 +121,7 @@ pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) ->
 ///
 /// # Arguments
 ///
-/// * `guild_id` - The Id of the guild to register the prefix for
+/// * `guild_id` - The Idrust-analyzer.completion.autoimport.enable of the guild to register the prefix for
 /// * `prefix_coll` - The `MongoDB` collection for the prefixes
 /// * `handler` - The Event Handler that dispatches the events
 ///
@@ -138,9 +138,9 @@ pub async fn register_prefix(
     handler: &Handler<'_>,
 ) -> Result<String> {
     let prefix_doc = PrefixDoc {
-        _id:       ObjectId::new(),
+        _id: ObjectId::new(),
         server_id: guild_id.to_string(),
-        prefix:    String::from("h!"),
+        prefix: String::from("h!"),
     };
     prefix_coll.insert_one(&prefix_doc, None).await?;
 
