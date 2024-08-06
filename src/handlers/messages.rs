@@ -6,7 +6,7 @@ use serenity::{model::prelude::*, prelude::*};
 use crate::{
     commands::misc::user_avatar,
     helpers::{
-        types::{Handler, MessageCommandData, PrefixDoc},
+        types::{Handler, MessageCommandData},
         utils::{is_indev, register_prefix},
     },
 };
@@ -27,11 +27,6 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
 
     let sub_cmd = content.get(1).map(|cmd| cmd.to_lowercase());
 
-    let prefix_coll = handler
-        .db_client
-        .database("hifumi")
-        .collection::<PrefixDoc>("prefixes");
-
     if let Some(guild_id) = msg.guild_id {
         if !handler
             .prefixes
@@ -39,7 +34,7 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
             .await
             .contains_key(&guild_id.to_string())
         {
-            match register_prefix(guild_id, prefix_coll, handler).await {
+            match register_prefix(guild_id, handler).await {
                 Ok(id) => {
                     debug!("Registered prefix for guild: {}", id);
                 }
@@ -89,6 +84,12 @@ pub async fn handle_message(handler: &Handler<'_>, ctx: &Context, msg: &Message)
 async fn handle_command(data: MessageCommandData<'_>) -> Result<()> {
     match data.command.as_str() {
         "pfp" | "avatar" => user_avatar(data).await?,
+        "test" => {
+            data.msg
+                .channel_id
+                .say(&data.ctx.http, "Test command")
+                .await?;
+        }
         _ => {}
     }
 

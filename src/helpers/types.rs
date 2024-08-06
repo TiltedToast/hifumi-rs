@@ -1,17 +1,17 @@
 use std::collections::HashMap;
+use crate::db::models::Status;
 
-use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
-use mongodb::Client as MongoClient;
 use serde::{Deserialize, Serialize};
-use serenity::{model::prelude::Message, prelude::Context};
+use serenity::{all::UserId, model::prelude::Message, prelude::Context};
 use tokio::sync::RwLock;
 
 use crate::config::Config;
 
-pub type StatusVec = RwLock<Vec<StatusDoc>>;
+pub type StatusVec = RwLock<Vec<Status>>;
 pub type PrefixMap = RwLock<HashMap<String, String>>;
 
+#[allow(dead_code)]
 pub struct MessageCommandData<'a> {
     pub ctx: &'a Context,
     pub msg: &'a Message,
@@ -24,18 +24,9 @@ pub struct MessageCommandData<'a> {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct StatusDoc {
-    pub _id: ObjectId,
-    pub r#type: String,
-    pub status: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PrefixDoc {
-    pub _id: ObjectId,
-    #[serde(rename = "serverId")]
-    pub server_id: String,
-    pub prefix: String,
+pub struct Owners {
+    pub primary: UserId,
+    pub secondary: Vec<UserId>,
 }
 
 /// Handler contains the data necessary to run the bot. This includes the start
@@ -44,7 +35,7 @@ pub struct PrefixDoc {
 pub struct Handler<'a> {
     pub start_time: DateTime<Utc>,
     pub config: Config<'a>,
-    pub db_client: MongoClient,
+    pub db_pool: sqlx::SqlitePool,
     pub statuses: StatusVec,
     pub prefixes: PrefixMap,
 }

@@ -1,5 +1,6 @@
 mod commands;
 mod config;
+mod db;
 mod handlers;
 mod helpers;
 
@@ -10,19 +11,19 @@ use std::{collections::HashMap, env, io::Write, process};
 
 use anyhow::Result;
 use chrono::{format::strftime::StrftimeItems, Utc};
+use db::models::{Prefix, Status};
 use dotenvy::dotenv;
-use futures::stream::TryStreamExt;
 use log::{Level, LevelFilter};
-use mongodb::{options::ClientOptions, Client as MongoClient};
 use pretty_env_logger::{env_logger::fmt::Color, formatted_builder};
 use serenity::{async_trait, model::prelude::*, prelude::*, Client as DiscordClient};
+use sqlx::SqlitePool;
 use tokio::sync::RwLock;
 
 use crate::{
     config::Config,
     handlers::messages::handle_message,
     helpers::{
-        types::{Handler, PrefixDoc, StatusDoc},
+        types::Handler,
         utils::{error_log, is_indev, start_status_loop},
     },
 };
@@ -37,7 +38,7 @@ impl EventHandler for Handler<'_> {
                     Ok(_) => (),
                     Err(e) => error!("Failed to log error, {e}"),
                 }
-                match msg.channel_id.say(&ctx.http, e).await {
+                match msg.channel_id.say(&ctx.http, e.to_string()).await {
                     Ok(_) => (),
                     Err(e) => error!("Failed to send message, {e}"),
                 };
@@ -113,58 +114,32 @@ async fn main() -> Result<()> {
         error!("Expected a bot token under BOT_TOKEN in the environment");
         process::exit(1);
     });
-    let intents = GatewayIntents::non_privileged()
-        | GatewayIntents::GUILDS
-        | GatewayIntents::GUILD_MEMBERS
-        | GatewayIntents::GUILD_EMOJIS_AND_STICKERS
-        | GatewayIntents::GUILD_MESSAGES
-        | GatewayIntents::GUILD_MESSAGE_REACTIONS
-        | GatewayIntents::MESSAGE_CONTENT
-        | GatewayIntents::DIRECT_MESSAGES;
-
+    let intents = GatewayIntents::all();
     let config = Config::new();
 
-    let mongo_options = ClientOptions::parse(&config.mongo_uri)
-        .await
-        .unwrap_or_else(|_| {
-            error!("Failed to parse MongoDB URI");
-            process::exit(1);
-        });
-
-    let mongo_client = MongoClient::with_options(mongo_options).unwrap_or_else(|_| {
-        error!("Failed to connect to MongoDB");
-        process::exit(1);
-    });
+    let db_pool = SqlitePool::connect(&env::var("DATABASE_URL")?).await?;
 
     #[allow(unused_mut)]
-    let mut status_array = mongo_client
-        .database("hifumi")
-        .collection::<StatusDoc>("statuses")
-        .find(None, None)
-        .await?
-        .try_collect::<Vec<StatusDoc>>()
+    let mut statuses = sqlx::query_as!(Status, "SELECT * FROM statuses")
+        .fetch_all(&db_pool)
         .await?;
 
     let mut prefixes: HashMap<String, String> = HashMap::new();
 
-    let prefix_array = mongo_client
-        .database("hifumi")
-        .collection::<PrefixDoc>("prefixes")
-        .find(None, None)
-        .await?
-        .try_collect::<Vec<PrefixDoc>>()
+    let prefix_arr = sqlx::query_as!(Prefix, "SELECT * FROM prefixes")
+        .fetch_all(&db_pool)
         .await?;
 
-    for prefix_doc in prefix_array {
-        prefixes.insert(prefix_doc.server_id, prefix_doc.prefix);
+    for prefix in prefix_arr {
+        prefixes.insert(prefix.server_id, prefix.prefix);
     }
 
     let mut client = DiscordClient::builder(token, intents)
         .event_handler(Handler {
             start_time,
             config,
-            db_client: mongo_client,
-            statuses: RwLock::new(status_array),
+            db_pool,
+            statuses: RwLock::new(statuses),
             prefixes: RwLock::new(prefixes),
         })
         .await

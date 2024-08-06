@@ -3,13 +3,11 @@
 use std::env;
 
 use anyhow::{anyhow, Result};
-use bson::oid::ObjectId;
 use chrono::{format::strftime::StrftimeItems, Utc};
-use mongodb::Collection;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 use serenity::{
+    all::{ActivityData, UserId},
     model::{
-        gateway::Activity,
         prelude::{ChannelId, GuildId, Message},
         user::User,
     },
@@ -17,7 +15,8 @@ use serenity::{
 };
 use tokio::time::{sleep, Duration};
 
-use super::types::{Handler, MessageCommandData, PrefixDoc, StatusVec};
+use super::types::{Handler, MessageCommandData, StatusVec};
+use crate::db::models::StatusType;
 
 /// Logs an error to the console and to the error channel.
 /// Also saves it to the database.
@@ -36,7 +35,7 @@ pub async fn error_log(
     handler: &Handler<'_>,
 ) -> Result<()> {
     let date_format = StrftimeItems::new("%d/%m/%Y %H:%M:%S UTC");
-    let current_time = Utc::now().format_with_items(date_format);
+    let current_time = Utc::now().format_with_items(date_format).to_string();
 
     let error_channel = message
         .channel_id
@@ -44,8 +43,8 @@ pub async fn error_log(
         .await
         .unwrap_or("Unknown".into());
 
-    let guild_name = match message.guild(ctx) {
-        Some(guild) => guild.name,
+    let guild_name = match message.guild(&ctx.cache) {
+        Some(guild) => guild.name.clone(),
         None => "Direct Message".to_string(),
     };
 
@@ -57,28 +56,28 @@ pub async fn error_log(
     let (user_name, user_id) = (&message.author.name, message.author.id);
 
     let error_msg = String::new()
-        + &format!("An Error occurred on {current_time}\n")
-        + &format!("**Server:** {guild_name} - {guild_id}\n")
-        + &format!("**Room:** {error_channel}\n")
-        + &format!("**User:** {user_name} - {user_id}\n",)
+        + &format!("An Error occurred on {}\n", &current_time)
+        + &format!("**Server:** {} - {}\n", &guild_name, &guild_id)
+        + &format!("**Room:** {}\n", &error_channel)
+        + &format!("**User:** {} - {}\n", &user_name, &user_id)
         + &format!("**Command used:** {}\n", message.content)
-        + &format!("**Error:** {error}");
+        + &format!("**Error:** {}", &error);
 
-    error!("An Error occurred on {current_time}");
-    error!("Server: {guild_name} - {guild_id}");
-    error!("Room: {error_channel}");
-    error!("User: {user_name} - {user_id}");
+    error!("An Error occurred on {}", &current_time);
+    error!("Server: {} - {}", &guild_name, &guild_id);
+    error!("Room: {}", &error_channel);
+    error!("User: {} - {}", &user_name, &user_id);
     error!("Command used: {}", message.content);
-    error!("Error: {error}");
+    error!("Error: {}", &error);
 
     let error_channel = if handler
         .config
         .dev_channels
-        .contains(message.channel_id.as_u64())
+        .contains(&message.channel_id.into())
     {
         message.channel_id
     } else {
-        ChannelId(handler.config.log_channel)
+        ChannelId::new(handler.config.log_channel)
     };
 
     error_channel.say(&ctx.http, &error_msg).await?;
@@ -108,7 +107,7 @@ pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) ->
             .map_err(|_| anyhow!("Invalid User Id"))?;
         data.ctx
             .http
-            .get_user(user_id)
+            .get_user(UserId::from(user_id))
             .await
             .map_err(|_| anyhow!("User not found"))?
     } else {
@@ -121,8 +120,7 @@ pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) ->
 ///
 /// # Arguments
 ///
-/// * `guild_id` - The Idrust-analyzer.completion.autoimport.enable of the guild to register the prefix for
-/// * `prefix_coll` - The `MongoDB` collection for the prefixes
+/// * `guild_id` - The Id of the guild to register the prefix for
 /// * `handler` - The Event Handler that dispatches the events
 ///
 /// # Returns
@@ -132,25 +130,25 @@ pub async fn parse_target_user<'a>(data: &MessageCommandData<'a>, idx: usize) ->
 ///
 /// # Errors
 /// * If inserting the prefix into the database fails
-pub async fn register_prefix(
-    guild_id: GuildId,
-    prefix_coll: Collection<PrefixDoc>,
-    handler: &Handler<'_>,
-) -> Result<String> {
-    let prefix_doc = PrefixDoc {
-        _id: ObjectId::new(),
-        server_id: guild_id.to_string(),
-        prefix: String::from("h!"),
-    };
-    prefix_coll.insert_one(&prefix_doc, None).await?;
+pub async fn register_prefix(guild_id: GuildId, handler: &Handler<'_>) -> Result<String> {
+    let server_id = guild_id.to_string();
+    let prefix = String::from("h!");
+
+    sqlx::query!(
+        "INSERT INTO prefixes (server_id, prefiX) VALUES (?, ?)",
+        server_id,
+        prefix,
+    )
+    .execute(&handler.db_pool)
+    .await?;
 
     handler
         .prefixes
         .write()
         .await
-        .insert(prefix_doc.server_id.clone(), prefix_doc.prefix);
+        .insert(server_id.clone(), prefix);
 
-    Ok(prefix_doc.server_id)
+    Ok(server_id)
 }
 
 /// A function that takes a vector of statuses and a context
@@ -160,10 +158,10 @@ pub async fn start_status_loop(statuses: &StatusVec, ctx: Context) {
     loop {
         let random_status = random_element_vec(&statuses.read().await);
 
-        if let Some(status_doc) = random_status {
-            let activity = get_activity(&status_doc.r#type, &status_doc.status);
-            ctx.set_activity(activity).await;
-            debug!("Set status to: {} {}", status_doc.r#type, status_doc.status);
+        if let Some(status) = random_status {
+            let activity = get_activity(&status.r#type, &status.status);
+            ctx.set_activity(Some(activity));
+            debug!("Set status to: {:?} {}", status.r#type, status.status);
         } else {
             error!("No statuses found in database");
             return;
@@ -187,13 +185,6 @@ pub fn random_int_from_range(min: u64, max: u64) -> u64 {
     thread_rng().gen_range(min..=max)
 }
 
-/// Check if the bot is running inside a docker container
-///
-/// Checks for `DOCKER` environment variable to be set to `anything` as part
-/// of the Dockerfile
-pub fn inside_docker() -> bool {
-    !env::var("DOCKER").unwrap_or_default().is_empty()
-}
 
 /// Checks if the current environment is in development mode.
 ///
@@ -223,16 +214,6 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
 }
 
 #[rustfmt::skip]
-/// Maps a string and text to a serenity activity
-///
-/// The first string is the type of activity, the second is the text to use for the activity
-///
-/// The possible values are:
-/// - `WATCHING` -> `Activity::watching`
-/// - `LISTENING` -> `Activity::listening`
-/// - `PLAYING` -> `Activity::playing`
-/// - `COMPETING` -> `Activity::competing`
-///
 /// Returns a Discord activity based on the status type and name.
 ///
 /// # Arguments
@@ -243,17 +224,18 @@ pub fn random_element_vec<T: Clone>(vec: &[T]) -> Option<T> {
 /// # Examples
 ///
 /// ```
-/// let activity = get_activity("WATCHING", "Star Wars");
+/// let activity = get_activity(StatusType::Watching, "Star Wars");
 /// assert_eq!(activity, Activity::watching("Star Wars"));
 ///
-/// let activity = get_activity("EATING", "Pizza");
-/// assert_eq!(activity, Activity::playing("Pizza")
+/// let activity = get_activity(StatusType::Playing, "with Rust");
+/// assert_eq!(activity, Activity::playing("with Rust")
 /// ```
-pub fn get_activity(r#type: &str, status_msg: &str) -> Activity {
-    match r#type.to_lowercase().as_str() {
-        "listening" => Activity::listening(status_msg),
-        "watching"  => Activity::watching(status_msg),
-        "competing" => Activity::competing(status_msg),
-        _ => Activity::playing(status_msg),
+pub fn get_activity(r#type: &StatusType, status_msg: &str) -> ActivityData {
+    match r#type {
+        StatusType::Listening => ActivityData::listening(status_msg),
+        StatusType::Watching  => ActivityData::watching(status_msg),
+        StatusType::Competing => ActivityData::competing(status_msg),
+        StatusType::Custom    => ActivityData::custom(status_msg),
+        StatusType::Playing   => ActivityData::playing(status_msg),
     }
 }
